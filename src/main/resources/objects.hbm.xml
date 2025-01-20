@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+
+<hibernate-mapping>
+
+
+<!--USER-->
+    <class name="com.ashcollege.entities.UserEntity" table="my_users" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+<property name="firstName" column="firstName" />
+        <property name="lastName" column="lastName" />
+        <property name="password" column="password" />
+        <property name="phoneNumber" column="phoneNumber" />
+        <property name="mail" column="mail" />
+        <property name="lastActivityTime" column="last_activity_time"  type="java.util.Date"/>
+    </class>
+
+    <!--Exercise-->
+    <class name="com.ashcollege.entities.ExerciseEntity" table="exercises" lazy="false">
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="exerciseName" column="exerciseName" />
+        <property name="content" column="content" />
+        <property name="finalResult" column="finalResult" />
+        <many-to-one name="subject" column="subject_id"
+                     class="com.ashcollege.entities.SubjectEntity"/>
+
+    </class>
+
+
+<!--    Solution-->
+    <class name="com.ashcollege.entities.SolutionEntity" table="solutions" lazy="false">
+    <id name="id" type="int" column="id">
+        <generator class="native"/>
+    </id>
+    <property name="finalResult" column="finalResult" />
+    <property name="fullSolution" column="fullSolution" />
+</class>
+
+    <!--    Student-->
+    <class name="com.ashcollege.entities.StudentEntity" table="students" lazy="false">
+    <id name="id" type="int" column="id">
+        <generator class="native"/>
+    </id>
+    <property name="difficultyLevel" column="difficultyLevel" />
+    <property name="brakePoint" column="brakePoint" />
+</class>
+
+<!--    Subject-->
+    <class name="com.ashcollege.entities.SubjectEntity" table="subjects" lazy="false">
+    <id name="id" type="int" column="id">
+        <generator class="native"/>
+    </id>
+    <property name="subjectName" column="subjectName" />
+    <property name="description" column="description" />
+</class>
+
+</hibernate-mapping>
