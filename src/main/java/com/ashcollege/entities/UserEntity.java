@@ -5,9 +5,7 @@ public class UserEntity extends BaseEntity{
     private String firstName;
     private String lastName;
     private String mail;
-    private String phoneNumber;
     private String password;
-    private Date lastActivityTime;
 
 
 
@@ -35,13 +33,6 @@ public class UserEntity extends BaseEntity{
         this.mail = mail;
     }
 
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
 
     public String getPassword() {
         return password;
@@ -52,11 +43,5 @@ public class UserEntity extends BaseEntity{
     }
 
 
-    public Date getLastActivityTime() {
-        return lastActivityTime;
-    }
 
-    public void setLastActivityTime(Date lastActivityTime) {
-        this.lastActivityTime = lastActivityTime;
-    }
 }
