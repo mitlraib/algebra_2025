@@ -39,6 +39,7 @@ public void init (){
     System.out.println();
 }
 
+
     @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.POST})
     public Object hello() {
         return "Hello From Server";
