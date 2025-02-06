@@ -1,5 +1,11 @@
 package com.ashcollege.entities;
 
+
+import org.hibernate.annotations.Table;
+
+import javax.persistence.Entity;
+
+
 public class StudentEntity extends  UserEntity {
 
     private int difficultyLevel;

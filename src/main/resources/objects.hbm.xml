@@ -14,9 +14,7 @@
 <property name="firstName" column="firstName" />
         <property name="lastName" column="lastName" />
         <property name="password" column="password" />
-        <property name="phoneNumber" column="phoneNumber" />
         <property name="mail" column="mail" />
-        <property name="lastActivityTime" column="last_activity_time"  type="java.util.Date"/>
     </class>
 
     <!--Exercise-->
