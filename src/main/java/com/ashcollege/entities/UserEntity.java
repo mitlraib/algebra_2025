@@ -15,6 +15,11 @@ public class UserEntity {
         private String password;
 
 
+
+    // קונסטרקטור ריק (חשוב ל- @RequestBody)
+    public UserEntity() {}
+
+
     public int getId() {
         return id;
     }

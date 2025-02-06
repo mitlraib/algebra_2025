@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import javax.transaction.Transactional;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -59,13 +61,17 @@ public class GeneralController {
 
 
         @PostMapping
-        public ResponseEntity<String> registerUser(@RequestBody UserEntity user) {
+        public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserEntity user) {
+            Map<String, Object> response = new HashMap<>();
             try {
                 userService.registerUser(user);
-                return ResponseEntity.ok("המשתמש נרשם בהצלחה");
+                response.put("success", true);
+                response.put("message", "המשתמש נרשם בהצלחה");
+                return ResponseEntity.ok(response);
             } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body("הייתה שגיאה במהלך הרישום: " + e.getMessage());
+                response.put("success", false);
+                response.put("message", "הייתה שגיאה במהלך הרישום: " + e.getMessage());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
         }
     }
