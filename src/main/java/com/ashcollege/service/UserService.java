@@ -28,4 +28,16 @@ public class UserService {
         userRepository.save(user);
         System.out.println("המשתמש נשמר!");
     }
+
+
+    // מתודה שמחפשת את המשתמש לפי המייל
+    public UserEntity findByMail(String mail) {
+        return userRepository.findByMail(mail);
+    }
+
+    // מתודה להשוואת הסיסמאות (בלי הצפנה)
+    public boolean checkPassword(String rawPassword, String storedPassword) {
+        return rawPassword.equals(storedPassword);
+    }
+
 }

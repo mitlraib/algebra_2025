@@ -10,5 +10,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     boolean existsByMail(String email);
 
+    // מתודה שמבצע חיפוש של משתמש לפי המייל
+    UserEntity findByMail(String email);
 
 }

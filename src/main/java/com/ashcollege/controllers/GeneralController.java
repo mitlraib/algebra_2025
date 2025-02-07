@@ -52,15 +52,11 @@ public class GeneralController {
     }
 
 
-    @RestController
-    @RequestMapping("/api/register")
-    public class UserController {
-
         @Autowired
         private UserService userService;
 
 
-        @PostMapping
+        @PostMapping("/api/register")
         public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserEntity user) {
             Map<String, Object> response = new HashMap<>();
             try {
@@ -74,6 +70,41 @@ public class GeneralController {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
             }
         }
-    }
 
+
+    @PostMapping("/api/login")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData) {
+        Map<String, Object> response = new HashMap<>();
+        String mail = loginData.get("mail");
+        String password = loginData.get("password");
+
+        System.out.println("User attempting to login: " + mail);
+
+        try {
+            UserEntity foundUser = userService.findByMail(mail);
+
+            if (foundUser != null) {
+                boolean passwordMatches = userService.checkPassword(password, foundUser.getPassword());
+
+                if (passwordMatches) {
+                    response.put("success", true);
+                    response.put("message", "המשתמש התחבר בהצלחה");
+                    return ResponseEntity.ok(response);
+                } else {
+                    response.put("success", false);
+                    response.put("message", "המשתמש או הסיסמא לא נכונים");
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+                }
+            } else {
+                response.put("success", false);
+                response.put("message", "המשתמש לא נמצא");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            }
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "הייתה שגיאה במהלך הכניסה: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }
