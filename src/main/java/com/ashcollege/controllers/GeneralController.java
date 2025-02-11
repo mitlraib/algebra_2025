@@ -71,7 +71,6 @@ public class GeneralController {
             }
         }
 
-
     @PostMapping("/api/login")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData) {
         Map<String, Object> response = new HashMap<>();
@@ -92,7 +91,7 @@ public class GeneralController {
                     return ResponseEntity.ok(response);
                 } else {
                     response.put("success", false);
-                    response.put("message", "המשתמש או הסיסמא לא נכונים");
+                    response.put("message", "הסיסמה שגויה");
                     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
                 }
             } else {
