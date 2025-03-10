@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 
+
 @Service
 @Transactional
 public class UserService {
@@ -39,6 +40,12 @@ public class UserService {
         return rawPassword.equals(storedPassword);
     }
 
+    public void updateUser(UserEntity user) {
+        userRepository.save(user);
     }
+
+
+}
+
 
 

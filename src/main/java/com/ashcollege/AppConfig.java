@@ -1,7 +1,6 @@
 package com.ashcollege;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import org.hibernate.jpa.boot.spi.EntityManagerFactoryBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -11,16 +10,6 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
-import javax.sql.DataSource;
-
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
-
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -28,13 +17,13 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Properties;
 
-import static com.ashcollege.utils.Constants.*;
-
+import static com.ashcollege.utils.Constants.DB_PASSWORD;
+import static com.ashcollege.utils.Constants.DB_USERNAME;
+import static com.ashcollege.utils.Constants.SCHEMA;
 
 @Configuration
 @Profile("production")
 public class AppConfig {
-
 
     @Bean
     public DataSource dataSource() throws Exception {
@@ -72,21 +61,16 @@ public class AppConfig {
         return sessionFactoryBean;
     }
 
-//    @Bean
-//    public HibernateTransactionManager transactionManager() throws Exception {
-//        HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-//        transactionManager.setSessionFactory(sessionFactory().getObject());
-//        return transactionManager;
-//    }
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**").allowedOrigins("*");
-            }
-        };
-    }
+    // אם תרצי להשתמש ב-HibernateTransactionManager במקום JPA:
+    // @Bean
+    // public HibernateTransactionManager transactionManager() throws Exception {
+    //     HibernateTransactionManager transactionManager = new HibernateTransactionManager();
+    //     transactionManager.setSessionFactory(sessionFactory().getObject());
+    //     return transactionManager;
+    // }
+
+    // הורדנו כאן את ה-WebMvcConfigurer שהחזיר allowedOrigins("*")
+    // כדי שלא יסתור את CorsConfig.
 
     @Bean
     public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
@@ -97,16 +81,16 @@ public class AppConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.ashcollege.entities"); // לוודא שזה הנתיב שבו ה-Entities שלך
+        em.setPackagesToScan("com.ashcollege.entities");
 
         // הוספת ספק JPA - חובה כדי ש-Hibernate יעבוד
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
 
-        // הגדרות של Hibernate
+        // הגדרות Hibernate
         Properties properties = new Properties();
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
-        properties.setProperty("hibernate.hbm2ddl.auto", "update"); // לשנות ל-"validate" בפרודקשן
+        properties.setProperty("hibernate.hbm2ddl.auto", "update");
         properties.setProperty("hibernate.show_sql", "true");
         properties.setProperty("hibernate.format_sql", "true");
         properties.setProperty("hibernate.enable_lazy_load_no_trans", "true");
@@ -115,6 +99,4 @@ public class AppConfig {
 
         return em;
     }
-
-
 }

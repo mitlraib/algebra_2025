@@ -3,22 +3,26 @@ package com.ashcollege.entities;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "my_users") // אופציונלי - קובע שם טבלה מפורש
+@Table(name = "my_users")
 public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-        private String firstName;
-        private String lastName;
-        private String mail;
-        private String password;
 
+    private String firstName;
+    private String lastName;
+    private String mail;
+    private String password;
 
+    // אם תרצי לשמור רמה של המשתמש
+    private int level;
 
-    // קונסטרקטור ריק (חשוב ל- @RequestBody)
-    public UserEntity() {}
+    // קונסטרקטור ריק
+    public UserEntity() {
+    }
 
+    // --- Getters & Setters ---
 
     public int getId() {
         return id;
@@ -27,6 +31,7 @@ public class UserEntity {
     public void setId(int id) {
         this.id = id;
     }
+
     public String getFirstName() {
         return firstName;
     }
@@ -59,5 +64,11 @@ public class UserEntity {
         this.password = password;
     }
 
+    public int getLevel() {
+        return level;
+    }
 
+    public void setLevel(int level) {
+        this.level = level;
+    }
 }

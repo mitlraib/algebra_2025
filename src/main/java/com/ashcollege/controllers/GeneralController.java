@@ -5,8 +5,13 @@ import com.ashcollege.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,22 +48,39 @@ public class GeneralController {
      * 📌 התחברות משתמש
      */
     @PostMapping("/api/login")
-    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData) {
+
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData,
+                                                         HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
         String mail = loginData.get("mail");
         String password = loginData.get("password");
 
-        System.out.println("User attempting to login: " + mail);
-
         try {
             UserEntity foundUser = userService.findByMail(mail);
-
             if (foundUser != null) {
                 boolean passwordMatches = userService.checkPassword(password, foundUser.getPassword());
 
                 if (passwordMatches) {
+                    // כאן חשוב: ניצור אובייקט Authentication
+                    // ונשמור בסשן כדי ש-Spring יזהה אותנו ב-Requests הבאים.
+                    UsernamePasswordAuthenticationToken auth =
+                            new UsernamePasswordAuthenticationToken(
+                                    foundUser.getMail(), // מה נחשב כ-Principal
+                                    null,
+                                    new ArrayList<>() // או רשימת Roles
+                            );
+
+                    // נכניס אותו ל-SecurityContext:
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+
+                    // נבקש אובייקט HttpSession ונשמור בו את ה-SecurityContext
+                    request.getSession(true)
+                            .setAttribute("SPRING_SECURITY_CONTEXT",
+                                    SecurityContextHolder.getContext());
+
                     response.put("success", true);
                     response.put("message", "המשתמש התחבר בהצלחה");
+                    // לא צריך להחזיר טוקן. ה-Session ID נשלח כ-Cookie ב-Response
                     return ResponseEntity.ok(response);
                 } else {
                     response.put("success", false);
@@ -70,12 +92,35 @@ public class GeneralController {
                 response.put("message", "המשתמש לא נמצא");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
             }
-
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "הייתה שגיאה במהלך הכניסה: " + e.getMessage());
+            response.put("message", "שגיאה בכניסה: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
+    }
+
+    @GetMapping("/api/user")
+    public ResponseEntity<Map<String, Object>> getUser(HttpServletRequest request) {
+        // ה-SecurityContext
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            // או שנבדוק בצורה אחרת
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+
+        String userMail = (String) auth.getPrincipal(); // כי שמנו את mail כ-Principal
+        UserEntity user = userService.findByMail(userMail);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("firstName", user.getFirstName());
+        response.put("lastName", user.getLastName());
+        response.put("mail", user.getMail());
+        response.put("level", user.getLevel());
+        return ResponseEntity.ok(response);
     }
 
 
