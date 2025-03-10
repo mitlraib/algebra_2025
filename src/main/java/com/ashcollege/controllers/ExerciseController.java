@@ -90,10 +90,11 @@ public class ExerciseController {
         session.setAttribute("consecutiveCorrect", consecutive);
 
         // 5) אם הגיע ל-5 רצופות => העלאת רמה
-        if (consecutive >= 5 && user.getLevel() == 1) {
+        if (consecutive >= 6) {
             user.setLevel(user.getLevel() + 1);
             userService.updateUser(user);  // מתודה שנשמור ב-DB
             session.setAttribute("consecutiveCorrect", 0); // איפוס
+            consecutive = 0;
         }
 
         // 6) בונים תשובה ללקוח

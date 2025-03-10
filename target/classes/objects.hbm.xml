@@ -15,6 +15,8 @@
         <property name="lastName" column="lastName" />
         <property name="password" column="password" />
         <property name="mail" column="mail" />
+        <property name="level" column="level" />
+
     </class>
 
     <!--Exercise-->

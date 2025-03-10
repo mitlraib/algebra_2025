@@ -1,5 +1,7 @@
 package com.ashcollege.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -8,6 +10,7 @@ import java.util.Random;
 
 @Service
 public class ExerciseService {
+    private static final Logger logger = LoggerFactory.getLogger(ExerciseService.class);
 
     private final Random rand = new Random();
 
@@ -23,6 +26,10 @@ public class ExerciseService {
      *  }
      */
     public Map<String, Object> generateQuestion(int topicId, int userLevel) {
+
+        logger.info("User Level: {}", userLevel);
+
+
         // נקבע את הסימן והלוגיקה על פי topicId
         String sign = topicIdToSign(topicId);
 
@@ -30,7 +37,7 @@ public class ExerciseService {
         boolean valid = false;
 
         while (!valid) {
-            if (userLevel == 1) {
+            if (userLevel <= 1) {
                 first = rand.nextInt(9) + 1;
                 second = rand.nextInt(9) + 1;
             } else {
@@ -54,14 +61,14 @@ public class ExerciseService {
                     correct = first * second;
                     break;
                 case "÷":
-                    int c = rand.nextInt(userLevel == 1 ? 3 : 9) + 1;
-                    second = rand.nextInt(userLevel == 1 ? 3 : 9) + 1;
+                    int c = rand.nextInt(userLevel <= 1 ? 3 : 9) + 1;
+                    second = rand.nextInt(userLevel <= 1 ? 3 : 9) + 1;
                     first = c * second;
                     correct = c;
                     break;
             }
 
-            if (userLevel == 1) {
+            if (userLevel <= 1) {
                 if (correct <= 10 && first <= 10 && second <= 10) {
                     valid = true;
                 }

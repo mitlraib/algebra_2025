@@ -21,7 +21,7 @@ public class UserService {
         if (userRepository.existsByMail(user.getMail())) {
             throw new RuntimeException("המייל כבר קיים במערכת");
         }
-
+        user.setLevel(1);
         // שמירת המשתמש
         //userRepository.save(user);
         System.out.println("שומר את המשתמש...");
