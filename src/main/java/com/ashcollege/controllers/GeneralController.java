@@ -1,3 +1,5 @@
+
+
 package com.ashcollege.controllers;
 
 import com.ashcollege.entities.UserEntity;
@@ -123,5 +125,39 @@ public class GeneralController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/api/user/update-level")
+    public ResponseEntity<Map<String, Object>> updateUserLevel(@RequestBody Map<String, Integer> request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(401).body(null);
+        }
+
+        String userMail = (String) auth.getPrincipal();
+        UserEntity user = userService.findByMail(userMail);
+        if (user == null) {
+            return ResponseEntity.status(404).body(null);
+        }
+
+        int newLevel = request.get("level");
+
+        // לוודא שהמשתמש יכול רק להוריד רמה, לא להעלות מעבר למה שהשיג
+        if (newLevel < 1 || newLevel > user.getLevel()) {
+            System.out.println("⚠️ רמה לא תקינה: " + newLevel); // הדפסה לבדיקה
+            return ResponseEntity.badRequest().body(null);
+        }
+
+        user.setLevel(newLevel);
+        userService.updateUser(user);
+        System.out.println("✅ עדכון רמה בשרת ל-" + newLevel); // בדיקה שהשרת משנה באמת
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("newLevel", newLevel);
+        return ResponseEntity.ok(response);
+    }
 
 }
+
+
+
+

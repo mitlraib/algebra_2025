@@ -1,7 +1,12 @@
 package com.ashcollege.service;
 
+import com.ashcollege.entities.UserEntity;
+import com.ashcollege.entities.UserTopicLevelEntity;
+import com.ashcollege.repository.UserTopicLevelRepository;
+import com.ashcollege.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -14,6 +19,12 @@ public class ExerciseService {
 
     private final Random rand = new Random();
 
+    @Autowired
+    private UserService userService;  // הוספת ה-UserService כאן
+
+    @Autowired
+    private UserTopicLevelRepository userTopicLevelRepo; // ייבוא של המחלקה UserTopicLevelRepository
+
     /**
      * מייצר שאלה בהתאם לרמת המשתמש ול-topicId.
      * מחזיר Map עם:
@@ -22,13 +33,19 @@ public class ExerciseService {
      *     "second": int,
      *     "operationSign": "+"/"-"/"×"/"÷",
      *     "correctAnswer": int,
-     *     "answers": int[],
+     *     "answers": int[]",
      *  }
      */
     public Map<String, Object> generateQuestion(int topicId, int userLevel) {
 
         logger.info("User Level: {}", userLevel);
 
+        // לקבל את המשתמש הנוכחי
+        UserEntity user = userService.getCurrentUser();  // שיטה שמחזירה את המשתמש הנוכחי
+
+        // מציאת רמת המשתמש בנושא הרלוונטי
+        UserTopicLevelEntity userTopicLevel = userTopicLevelRepo.findByUserIdAndTopicId(user.getId(), topicId);
+        int currentLevel = (userTopicLevel != null) ? userTopicLevel.getLevel() : 1; // ברירת מחדל 1
 
         // נקבע את הסימן והלוגיקה על פי topicId
         String sign = topicIdToSign(topicId);
@@ -37,7 +54,7 @@ public class ExerciseService {
         boolean valid = false;
 
         while (!valid) {
-            if (userLevel <= 1) {
+            if (currentLevel <= 1) {
                 first = rand.nextInt(9) + 1;
                 second = rand.nextInt(9) + 1;
             } else {
@@ -61,14 +78,14 @@ public class ExerciseService {
                     correct = first * second;
                     break;
                 case "÷":
-                    int c = rand.nextInt(userLevel <= 1 ? 3 : 9) + 1;
-                    second = rand.nextInt(userLevel <= 1 ? 3 : 9) + 1;
+                    int c = rand.nextInt(currentLevel <= 1 ? 3 : 9) + 1;
+                    second = rand.nextInt(currentLevel <= 1 ? 3 : 9) + 1;
                     first = c * second;
                     correct = c;
                     break;
             }
 
-            if (userLevel <= 1) {
+            if (currentLevel <= 1) {
                 if (correct <= 10 && first <= 10 && second <= 10) {
                     valid = true;
                 }
@@ -114,10 +131,14 @@ public class ExerciseService {
 
     private String topicIdToSign(int topicId) {
         switch (topicId) {
-            case 1: return "+";
-            case 2: return "-";
-            case 3: return "×";
-            case 4: return "÷";
+            case 1: return "+"; // חיבור
+            case 2: return "-"; // חיסור
+            case 3: return "×"; // כפל
+            case 4: return "÷"; // חילוק
+            case 5: return "fracAdd";    // חיבור שברים
+            case 6: return "fracSub";    // ...
+            case 7: return "fracMul";
+            case 8: return "fracDiv";
         }
         return "+"; // ברירת מחדל
     }
