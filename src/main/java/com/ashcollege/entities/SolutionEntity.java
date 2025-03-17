@@ -1,6 +1,6 @@
 package com.ashcollege.entities;
 
-public class SolutionEntity extends BaseEntity {
+    public class SolutionEntity extends BaseEntity {
     private String finalResult;
     private String fullSolution;
     private ExerciseEntity exercise;

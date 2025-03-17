@@ -3,9 +3,11 @@ package com.ashcollege.service;
 import com.ashcollege.entities.UserEntity;
 import com.ashcollege.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-import javax.transaction.Transactional;
 
+import javax.transaction.Transactional;
 
 @Service
 @Transactional
@@ -16,19 +18,13 @@ public class UserService {
 
     public void registerUser(UserEntity user) {
         // בדיקה אם שם המשתמש או המייל כבר קיימים
-
-
         if (userRepository.existsByMail(user.getMail())) {
             throw new RuntimeException("המייל כבר קיים במערכת");
         }
-        user.setLevel(1);
+        user.setLevel(1); // ברירת מחדל רמה 1
         // שמירת המשתמש
-        //userRepository.save(user);
-        System.out.println("שומר את המשתמש...");
         userRepository.save(user);
-        System.out.println("המשתמש נשמר!");
     }
-
 
     // מתודה שמחפשת את המשתמש לפי המייל
     public UserEntity findByMail(String mail) {
@@ -44,8 +40,15 @@ public class UserService {
         userRepository.save(user);
     }
 
-
+    /**
+     * מחזיר את המשתמש הנוכחי (המאומת) מה-SecurityContext
+     */
+    public UserEntity getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            String email = (String) auth.getPrincipal();
+            return userRepository.findByMail(email);
+        }
+        return null;  // במקרה של משתמש לא מחובר
+    }
 }
-
-
-
