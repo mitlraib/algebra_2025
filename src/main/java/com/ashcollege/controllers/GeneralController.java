@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-public class GeneralController {
+    public class GeneralController {
 
     @Autowired
     private UserService userService;
