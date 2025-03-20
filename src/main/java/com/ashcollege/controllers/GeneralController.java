@@ -1,5 +1,3 @@
-
-
 package com.ashcollege.controllers;
 
 import com.ashcollege.entities.UserEntity;
@@ -10,21 +8,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
-    public class GeneralController {
+public class GeneralController {
 
     @Autowired
     private UserService userService;
 
     @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.POST})
-    public Object hello() {
+    public String hello() {
         return "Hello From Server";
     }
 
@@ -41,7 +38,7 @@ import java.util.Map;
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);
-            response.put("message", "הייתה שגיאה במהלך הרישום: " + e.getMessage());
+            response.put("message", "שגיאה במהלך הרישום: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
@@ -50,7 +47,6 @@ import java.util.Map;
      * 📌 התחברות משתמש
      */
     @PostMapping("/api/login")
-
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData,
                                                          HttpServletRequest request) {
         Map<String, Object> response = new HashMap<>();
@@ -59,61 +55,44 @@ import java.util.Map;
 
         try {
             UserEntity foundUser = userService.findByMail(mail);
-            if (foundUser != null) {
-                boolean passwordMatches = userService.checkPassword(password, foundUser.getPassword());
-
-                if (passwordMatches) {
-                    // כאן חשוב: ניצור אובייקט Authentication
-                    // ונשמור בסשן כדי ש-Spring יזהה אותנו ב-Requests הבאים.
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(
-                                    foundUser.getMail(), // מה נחשב כ-Principal
-                                    null,
-                                    new ArrayList<>() // או רשימת Roles
-                            );
-
-                    // נכניס אותו ל-SecurityContext:
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-
-                    // נבקש אובייקט HttpSession ונשמור בו את ה-SecurityContext
-                    request.getSession(true)
-                            .setAttribute("SPRING_SECURITY_CONTEXT",
-                                    SecurityContextHolder.getContext());
-
-                    response.put("success", true);
-                    response.put("message", "המשתמש התחבר בהצלחה");
-                    // לא צריך להחזיר טוקן. ה-Session ID נשלח כ-Cookie ב-Response
-                    return ResponseEntity.ok(response);
-                } else {
-                    response.put("success", false);
-                    response.put("message", "הסיסמה שגויה");
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-                }
-            } else {
-                response.put("success", false);
-                response.put("message", "המשתמש לא נמצא");
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+            if (foundUser == null) {
+                return errorResponse("המשתמש לא נמצא", HttpStatus.UNAUTHORIZED);
             }
+
+            if (!userService.checkPassword(password, foundUser.getPassword())) {
+                return errorResponse("הסיסמה שגויה", HttpStatus.UNAUTHORIZED);
+            }
+
+            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            authorities.add(new SimpleGrantedAuthority("ADMIN".equalsIgnoreCase(foundUser.getRole()) ? "ROLE_ADMIN" : "ROLE_STUDENT"));
+
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    foundUser.getMail(), null, authorities
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            request.getSession(true).setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
+
+            return successResponse("המשתמש התחבר בהצלחה");
+
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "שגיאה בכניסה: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            return errorResponse("שגיאה בכניסה: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * 📌 שליפת נתוני משתמש מחובר
+     */
     @GetMapping("/api/user")
-    public ResponseEntity<Map<String, Object>> getUser(HttpServletRequest request) {
-        // ה-SecurityContext
+    public ResponseEntity<Map<String, Object>> getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            // או שנבדוק בצורה אחרת
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
         }
 
-        String userMail = (String) auth.getPrincipal(); // כי שמנו את mail כ-Principal
+        String userMail = (String) auth.getPrincipal();
         UserEntity user = userService.findByMail(userMail);
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -125,30 +104,30 @@ import java.util.Map;
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 📌 עדכון רמת המשתמש
+     */
     @PutMapping("/api/user/update-level")
     public ResponseEntity<Map<String, Object>> updateUserLevel(@RequestBody Map<String, Integer> request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
-            return ResponseEntity.status(401).body(null);
+            return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
         }
 
         String userMail = (String) auth.getPrincipal();
         UserEntity user = userService.findByMail(userMail);
         if (user == null) {
-            return ResponseEntity.status(404).body(null);
+            return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
         }
 
-        int newLevel = request.get("level");
-
-        // לוודא שהמשתמש יכול רק להוריד רמה, לא להעלות מעבר למה שהשיג
+        int newLevel = request.getOrDefault("level", 1);
         if (newLevel < 1 || newLevel > user.getLevel()) {
-            System.out.println("⚠️ רמה לא תקינה: " + newLevel); // הדפסה לבדיקה
-            return ResponseEntity.badRequest().body(null);
+            return errorResponse("רמה לא תקינה: " + newLevel, HttpStatus.BAD_REQUEST);
         }
 
         user.setLevel(newLevel);
         userService.updateUser(user);
-        System.out.println("✅ עדכון רמה בשרת ל-" + newLevel); // בדיקה שהשרת משנה באמת
+        System.out.println("✅ עדכון רמה ל-" + newLevel);
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
@@ -156,8 +135,23 @@ import java.util.Map;
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * 🔹 פונקציית עזר ליצירת תשובה עם שגיאה
+     */
+    private ResponseEntity<Map<String, Object>> errorResponse(String message, HttpStatus status) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", message);
+        return ResponseEntity.status(status).body(response);
+    }
+
+    /**
+     * 🔹 פונקציית עזר ליצירת תשובה עם הצלחה
+     */
+    private ResponseEntity<Map<String, Object>> successResponse(String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", message);
+        return ResponseEntity.ok(response);
+    }
 }
-
-
-
-

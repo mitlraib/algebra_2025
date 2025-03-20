@@ -2,7 +2,6 @@ package com.ashcollege.service;
 
 import com.ashcollege.entities.UserEntity;
 import com.ashcollege.entities.UserTopicLevelEntity;
-import com.ashcollege.repository.UserRepository;
 import com.ashcollege.repository.UserTopicLevelRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,12 +12,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-
 @Service
 public class ExerciseService {
     private static final Logger logger = LoggerFactory.getLogger(ExerciseService.class);
-
-    private final Random rand = new Random();
 
     @Autowired
     private UserService userService;
@@ -26,31 +22,27 @@ public class ExerciseService {
     @Autowired
     private UserTopicLevelRepository userTopicLevelRepo;
 
-    /**
-     * מייצר שאלה בהתאם ל-topicId, לפי הרמה של המשתמש באותו נושא.
-     * משתמשים בשדה user_topic_levels (אם אין רשומה, ניצור אותה עם level=1).
-     */
+    private final Random rand = new Random();
+
     public Map<String, Object> generateQuestion(int topicId) {
-        // 1) מוצאים את המשתמש הנוכחי
         UserEntity user = userService.getCurrentUser();
         if (user == null) {
             throw new RuntimeException("No current user found");
         }
 
-        // 2) שליפת רמה לנושא (או יצירת רשומת רמה 1 אם לא קיימת)
-        UserTopicLevelEntity userTopicLevel = userTopicLevelRepo.findByUserIdAndTopicId(user.getId(), topicId);
-        if (userTopicLevel == null) {
-            userTopicLevel = new UserTopicLevelEntity();
-            userTopicLevel.setUserId(user.getId());
-            userTopicLevel.setTopicId(topicId);
-            userTopicLevel.setLevel(1);
-            userTopicLevelRepo.save(userTopicLevel);
+        // שליפת רמת המשתמש לנושא
+        UserTopicLevelEntity ute = userTopicLevelRepo.findByUserIdAndTopicId(user.getId(), topicId);
+        if (ute == null) {
+            ute = new UserTopicLevelEntity();
+            ute.setUserId(user.getId());
+            ute.setTopicId(topicId);
+            ute.setLevel(1);
+            userTopicLevelRepo.save(ute);
         }
-        int currentLevel = userTopicLevel.getLevel();
+        int currentLevel = ute.getLevel();
         logger.info("Topic {} => CurrentLevel={}", topicId, currentLevel);
 
-        // 3) ניצור שאלה בהתאם לנושא (חיבור/חיסור/כפל/חילוק/שברים)
-        Map<String, Object> question = new HashMap<>();
+        Map<String, Object> question;
         switch (topicId) {
             case 1:
                 question = generateBasicArithmetic("+", currentLevel);
@@ -65,109 +57,83 @@ public class ExerciseService {
                 question = generateBasicArithmetic("÷", currentLevel);
                 break;
             case 5:
-                question = generateFractions("+", currentLevel);
+                question = generateFractionQuestion("+", currentLevel);
                 break;
             case 6:
-                question = generateFractions("-", currentLevel);
+                question = generateFractionQuestion("-", currentLevel);
                 break;
             case 7:
-                question = generateFractions("×", currentLevel);
+                question = generateFractionQuestion("×", currentLevel);
                 break;
             case 8:
-                question = generateFractions("÷", currentLevel);
+                question = generateFractionQuestion("÷", currentLevel);
                 break;
             default:
-                // ברירת מחדל, חיבור
                 question = generateBasicArithmetic("+", currentLevel);
-                break;
         }
 
-        // נוסיף ל-Map גם את topicId לצורך מעקב
         question.put("topicId", topicId);
-
         return question;
     }
 
-    /**
-     * מעלה את רמת המשתמש רק עבור topicId נתון.
-     */
     public void increaseUserTopicLevel(int userId, int topicId) {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
         if (rec != null) {
             rec.setLevel(rec.getLevel() + 1);
             userTopicLevelRepo.save(rec);
         }
-
     }
 
-
-    /**
-     * שליפת הרמה הנוכחית של המשתמש בנושא
-     */
     public int getUserTopicLevel(int userId, int topicId) {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
-        if (rec == null) {
-            return 1;
-        }
+        if (rec == null) return 1;
         return rec.getLevel();
     }
 
-    /**
-     * בדיקת תשובה (int userAnswer) מול correctAnswer.
-     */
     public boolean checkAnswer(Map<String, Object> question, int userAnswer) {
         int correct = (int) question.get("correctAnswer");
         return (userAnswer == correct);
     }
 
-    // --------------------- לוגיקת יצירת תרגילים רגילים (חיבור/חיסור/כפל/חילוק) ---------------------
-
+    // --- חיבור/חיסור/כפל/חילוק רגיל בהתאם לרמה: 1..5.. וכו' ---
     private Map<String, Object> generateBasicArithmetic(String sign, int level) {
-        // נגריל first ו-second בהתאם לרמה
-        int first = 0, second = 0, correct = 0;
+        // level: טווח = רמה*5
+        int maxVal = level * 5;
+        if (maxVal < 5) {
+            maxVal = 5;
+        }
+        int a = 0, b=0, correct=0;
         boolean valid = false;
 
         while (!valid) {
-            if (level <= 1) {
-                first = rand.nextInt(9) + 1;    // 1..9
-                second = rand.nextInt(9) + 1;
-            } else {
-                first = rand.nextInt(99) + 1;  // 1..99
-                second = rand.nextInt(99) + 1;
-            }
+            a = rand.nextInt(maxVal) + 1;
+            b = rand.nextInt(maxVal) + 1;
 
             switch (sign) {
                 case "+":
-                    correct = first + second;
+                    correct = a + b;
                     valid = true;
                     break;
                 case "-":
-                    // נוודא שלא נקבל תוצאה שלילית (לטובת רמה התחלתית)
-                    if (first >= second) {
-                        correct = first - second;
+                    if (a >= b) {
+                        correct = a - b;
                         valid = true;
                     }
                     break;
                 case "×":
-                    correct = first * second;
+                    correct = a * b;
                     valid = true;
                     break;
                 case "÷":
-                    // בגרסה פשוטה: second בין 1..9, נוודא שהראשון מתחלק ב-second
-                    if (level <= 1) {
-                        second = rand.nextInt(9) + 1;
-                        first = (rand.nextInt(9) + 1) * second;  // ככה הוא מתחלק
-                    } else {
-                        second = rand.nextInt(9) + 1;
-                        first = (rand.nextInt(15) + 1) * second;
+                    if (b != 0 && (a % b == 0)) {
+                        correct = a / b;
+                        valid = true;
                     }
-                    correct = first / second;
-                    valid = true;
                     break;
             }
+            // חוזר עד valid=true
         }
 
-        // תשובות
         int[] answers = new int[]{
                 correct,
                 correct + 1,
@@ -176,104 +142,183 @@ public class ExerciseService {
         };
         shuffleArray(answers);
 
-        Map<String, Object> q = new HashMap<>();
-        q.put("first", first);
-        q.put("second", second);
+        Map<String,Object> q = new HashMap<>();
+        q.put("first",   Integer.valueOf(a));
+        q.put("second",  Integer.valueOf(b));
         q.put("operationSign", sign);
         q.put("correctAnswer", correct);
+        q.put("answers", answers);
+        return q;
+    }
+
+    // --- שברים ---
+    private Map<String, Object> generateFractionQuestion(String sign, int level) {
+        int[] frac = createFractionPair(level); // מחזיר: [num1, den1, num2, den2]
+
+        int a = frac[0], b = frac[1]; // a/b
+        int c = frac[2], d = frac[3]; // c/d
+
+        // אם זה חיסור, נוודא a/b >= c/d (אחרת נבצע עוד פעם):
+        if (sign.equals("-")) {
+            if ((long)a * d < (long)c * b) {
+                // לשם פשטות אקרא שוב
+                return generateFractionQuestion(sign, level);
+            }
+        }
+
+        // חשב תשובה:
+        int num = 0, den = 0;
+        switch (sign) {
+            case "+":
+                if (b == d) {
+                    // מכנים זהים => מחברים מונים
+                    num = a + c;
+                    den = b;
+                } else {
+                    num = a*d + b*c;
+                    den = b*d;
+                }
+                break;
+            case "-":
+                if (b == d) {
+                    num = a - c;
+                    den = b;
+                } else {
+                    num = a*d - b*c;
+                    den = b*d;
+                }
+                break;
+            case "×":
+                num = a * c;
+                den = b * d;
+                break;
+            case "÷":
+                // (a/b) / (c/d) => (a*d)/(b*c)
+                num = a * d;
+                den = b * c;
+                break;
+        }
+
+        // לוודא לא שלילי ולא 0 במכנה
+        if (num < 0 || den <= 0) {
+            // נגריל מחדש
+            return generateFractionQuestion(sign, level);
+        }
+
+        // בונים 4 תשובות מקודדות
+        int correctEncoded = num*1000 + den;
+        int[] answers = new int[4];
+        answers[0] = correctEncoded;
+        answers[1] = (num+1)*1000 + den;
+        answers[2] = Math.max(1,num-1)*1000 + den;
+        answers[3] = num*1000 + Math.max(1, den+1);
+        shuffleArray(answers);
+
+        // להחזיר מפה
+        Map<String,Object> q = new HashMap<>();
+        q.put("first", a+"/"+b);
+        q.put("second", c+"/"+d);
+        q.put("operationSign", sign);
+        q.put("correctAnswer", correctEncoded);
         q.put("answers", answers);
 
         return q;
     }
 
-    // --------------------- לוגיקת יצירת תרגילי שברים (חיבור שברים וכו') ---------------------
-
-    private Map<String, Object> generateFractions(String sign, int level) {
-        // נגריל שברים במכנה בין 2..9, מונה קטן מהמכנה
-        int denominator1 = rand.nextInt(8) + 2; // 2..9
-        int denominator2 = rand.nextInt(8) + 2;
-        int numerator1 = rand.nextInt(denominator1 - 1) + 1; // 1..(denominator1-1)
-        int numerator2 = rand.nextInt(denominator2 - 1) + 1;
-
-        // נהפוך ל-(a/b) (c/d)
-        // נחשב תשובה "נכונה" כשבר, ואז נהפוך למונה שלם (לצורך השוואה) = crossMultiply
-        int correctNum = 0;
-        int correctDen = 0;
-
-        switch (sign) {
-            case "+":
-                // a/b + c/d => (ad + bc) / bd
-                correctNum = numerator1 * denominator2 + numerator2 * denominator1;
-                correctDen = denominator1 * denominator2;
-                break;
-            case "-":
-                // a/b - c/d => (ad - bc) / bd
-                correctNum = numerator1 * denominator2 - numerator2 * denominator1;
-                correctDen = denominator1 * denominator2;
-                break;
-            case "×":
-                // (a/b)*(c/d) => (ac)/(bd)
-                correctNum = numerator1 * numerator2;
-                correctDen = denominator1 * denominator2;
-                break;
-            case "÷":
-                // (a/b) / (c/d) => (a/b)*(d/c) = ad/bc
-                correctNum = numerator1 * denominator2;
-                correctDen = denominator1 * numerator2;
-                break;
+    /**
+     * מייצר זוג שברים בהתאם לרמה:
+     * levels:
+     * 1 => מכנה משותף עד 5
+     * 2 => מכנה משותף עד 10
+     * 3 => מכנה משותף עד 20
+     * 4 => מכנים שונים עד 5, מונה=1
+     * 5 => מכנים שונים עד 10, מונה=1
+     * 6 => מכנים שונים עד 5, מונה עד 5
+     * 7 => מכנים שונים עד 10, מונה עד 5
+     * 8 => מכנים שונים עד 15, מונה עד 5
+     * 9 => מכנים שונים עד 20, מונה עד 5
+     * וכו' (עולה ב-5 בכל רמה מעל 5).
+     *
+     * מחזיר מערך באורך 4: [num1,den1,num2,den2].
+     */
+    private int[] createFractionPair(int level) {
+        if (level < 1) {
+            level = 1;
         }
 
-        // נוכל לייצג את התשובה הנכונה כ"מונה שלם" correctNum, ו"מכנה שלם" correctDen
-        // אבל כדי להשוות תשובות בצורה פשוטה, נהפוך int answer = correctNum * BIG + correctDen ...
-        // יש דרכים אחרות. נשתמש פשוט במונה כ"correctAnswer" אם נרצה. אבל כאן לצורך הדמו:
+        boolean sameDen = false;  // האם שני השברים עם אותו מכנה
+        boolean differDen = false; // האם חייבים מכנה אחר
+        int maxDen = 5;
+        int forcedNum = -1; // אם != -1 => מונה=1, אם=0 => מונה רנדומלי עד 5
 
-        // אסטרטגיה: נשמור את "correctAnswer" כמספר שלם = (correctNum << 16) + correctDen
-        // רק בשביל שתהיה לנו דרך לבדוק userAnswer == correctAnswer. אבל אפשר גם מפוצל.
-        // כדי לא לסבך, נחשיב "correctAnswer" = correctNum * 1000 + correctDen (בתקווה שלא יעבור מכפל).
-        int correctEncoded = correctNum * 1000 + correctDen;
-
-        // התצוגה: "1/2 + 1/4"
-        String frac1 = numerator1 + "/" + denominator1;
-        String frac2 = numerator2 + "/" + denominator2;
-
-        // יצירת 4 תשובות, שכולן בצורה "X/Y" מקודדת => נמיר לEncoded.
-        int[] answersEncoded = new int[4];
-        answersEncoded[0] = correctEncoded;
-        answersEncoded[1] = (correctNum + 1) * 1000 + correctDen; // קצת אקראי
-        answersEncoded[2] = Math.max(1, correctNum - 1) * 1000 + correctDen;
-        answersEncoded[3] = correctNum * 1000 + Math.max(1, correctDen + 1);
-
-        shuffleArray(answersEncoded);
-
-        // מעבירים למערך String בצורת "X/Y"
-        String[] displayAnswers = new String[4];
-        for (int i = 0; i < 4; i++) {
-            int code = answersEncoded[i];
-            int num = code / 1000;
-            int den = code % 1000;
-            displayAnswers[i] = num + "/" + den;
+        if (level==1) {
+            sameDen = true; maxDen = 5;
+        } else if (level==2) {
+            sameDen = true; maxDen = 10;
+        } else if (level==3) {
+            sameDen = true; maxDen = 20;
+        } else if (level==4) {
+            differDen = true; maxDen = 5;  forcedNum=1;
+        } else if (level==5) {
+            differDen = true; maxDen = 10; forcedNum=1;
+        } else {
+            // level>=6
+            differDen = true;
+            int offset = 5*(level-5); // ex: level=6 => 5, 7=>10 ...
+            if (offset < 5) offset=5;
+            maxDen = offset;
+            forcedNum=0; // 0=> מונה רנדומלי עד 5
         }
 
-        // נבנה את המפה
-        Map<String, Object> q = new HashMap<>();
-        q.put("first", frac1);   // למשל "1/2"
-        q.put("second", frac2);  // "1/4"
-        q.put("operationSign", sign);
-        q.put("correctAnswer", correctEncoded);  // קידוד
-        q.put("answers", answersEncoded);         // מערך int מקודד
-        return q;
+        // ניצור שני שברים
+        if (sameDen) {
+            int den = rand.nextInt(maxDen-1)+2;
+            int n1 = rand.nextInt(den)+1;
+            int n2 = rand.nextInt(den)+1;
+            return new int[]{n1, den, n2, den};
+        }
+
+        // אחרת differDen (או רמות גבוהות)
+        // לשבר ראשון:
+        int[] f1 = createSingleFraction(maxDen, forcedNum);
+        int[] f2 = createSingleFraction(maxDen, forcedNum);
+
+        // ייתכן שיצא אותו מכנה. אם ממש רוצים "מכנים שונים" בכוח ברמות 4..5, אפשר לבדוק ולגריל שוב.
+        // אבל בשאלה שלך לא ראיתי שביקשת למנוע מכנים זהים - רק אמרת "מכנים שונים עם מונה=1".
+        // אוסיף בכל זאת:
+        if (level<=5) {
+            // נוודא den1 != den2
+            while (f2[1] == f1[1]) {
+                f2 = createSingleFraction(maxDen, forcedNum);
+            }
+        }
+
+        return new int[]{ f1[0], f1[1], f2[0], f2[1] };
     }
 
-    /**
-     * מערבב את המערך במקום
-     */
+    private int[] createSingleFraction(int maxDen, int forcedNum) {
+        int den = rand.nextInt(maxDen-1)+2; //2..maxDen
+        int num;
+        if (forcedNum>0) {
+            num = forcedNum;
+        } else if (forcedNum==0) {
+            // מונה 1..5
+            num = rand.nextInt(5)+1;
+        } else {
+            //forcedNum==-1 => מונה רנדומלי 1..den (או 1..maxDen?)
+            // לפי הדוגמה ראינו גם 5/3, 2/3... נגריל 1..(den)
+            num = rand.nextInt(den)+1;
+        }
+        return new int[]{num, den};
+    }
+
+    /** ערבוב מערך במקום */
     private void shuffleArray(int[] arr) {
-        for (int i = arr.length - 1; i > 0; i--) {
-            int j = rand.nextInt(i + 1);
+        for (int i = arr.length-1; i>0; i--) {
+            int j = rand.nextInt(i+1);
             int tmp = arr[i];
             arr[i] = arr[j];
             arr[j] = tmp;
         }
     }
-
 }
