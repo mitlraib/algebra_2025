@@ -92,12 +92,27 @@ public class ExerciseController {
 
         // אם הגיע ל-5 רצופות => העלאת רמה לנושא הספציפי
         // (שים לב שכאן אנחנו מעדכנים userTopicLevel ולא את user.level)
+//        if (consecutive >= 5) {
+//            exerciseService.increaseUserTopicLevel(user.getId(), topicId);
+//            // מאפסים את הרצף
+//            consecutiveMap.put(topicId, 0);
+//            session.setAttribute("consecutiveMap", consecutiveMap);
+//            consecutive = 0;
+//        }
+
+        // (שים לב שכאן אנחנו מעדכנים userTopicLevel ולא את user.level)
+
+        String levelUpMessage = null; // הודעה שתשלח למשתמש
         if (consecutive >= 5) {
             exerciseService.increaseUserTopicLevel(user.getId(), topicId);
             // מאפסים את הרצף
             consecutiveMap.put(topicId, 0);
             session.setAttribute("consecutiveMap", consecutiveMap);
             consecutive = 0;
+
+            int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId); // שליפת הרמה החדשה
+            levelUpMessage = "כל הכבוד! עלית לרמה "+ newLevel +" בנושא זה!";
+
         }
 
         // בונים תשובה ללקוח
@@ -108,6 +123,12 @@ public class ExerciseController {
         // שליפה עדכנית של הרמה לאחר עדכון
         int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
         result.put("currentLevel", newLevel);
+
+
+        // אם יש הודעה על העלאת רמה, נוסיף אותה
+        if (levelUpMessage != null) {
+            result.put("levelUpMessage", levelUpMessage);
+        }
 
         return ResponseEntity.ok(result);
     }
