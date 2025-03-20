@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+
 @Service
 public class ExerciseService {
     private static final Logger logger = LoggerFactory.getLogger(ExerciseService.class);
@@ -96,7 +97,9 @@ public class ExerciseService {
             rec.setLevel(rec.getLevel() + 1);
             userTopicLevelRepo.save(rec);
         }
+
     }
+
 
     /**
      * שליפת הרמה הנוכחית של המשתמש בנושא
