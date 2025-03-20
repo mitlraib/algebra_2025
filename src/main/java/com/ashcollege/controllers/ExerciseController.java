@@ -92,16 +92,6 @@ public class ExerciseController {
 
         // אם הגיע ל-5 רצופות => העלאת רמה לנושא הספציפי
         // (שים לב שכאן אנחנו מעדכנים userTopicLevel ולא את user.level)
-//        if (consecutive >= 5) {
-//            exerciseService.increaseUserTopicLevel(user.getId(), topicId);
-//            // מאפסים את הרצף
-//            consecutiveMap.put(topicId, 0);
-//            session.setAttribute("consecutiveMap", consecutiveMap);
-//            consecutive = 0;
-//        }
-
-        // (שים לב שכאן אנחנו מעדכנים userTopicLevel ולא את user.level)
-
         String levelUpMessage = null; // הודעה שתשלח למשתמש
         if (consecutive >= 5) {
             exerciseService.increaseUserTopicLevel(user.getId(), topicId);
