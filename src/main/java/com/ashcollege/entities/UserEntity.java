@@ -14,20 +14,24 @@ public class UserEntity {
     private String lastName;
     private String mail;
     private String password;
+    private int totalExercises = 0;
+    private int totalMistakes = 0;
 
-    // אם תרצי לשמור רמה של המשתמש
+
+
+    // רמת המשתמש בכללי
     private int level;
 
-    // קונסטרקטור ריק
+    // -- תוספת: role:
+    private String role; // למשל "ADMIN" או "STUDENT"
+
     public UserEntity() {
     }
 
     // --- Getters & Setters ---
-
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }
@@ -35,40 +39,46 @@ public class UserEntity {
     public String getFirstName() {
         return firstName;
     }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
 
     public String getLastName() {
         return lastName;
     }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
     public String getMail() {
         return mail;
     }
-
-    public void setMail(String mail) {
-        this.mail = mail;
-    }
+    public void setMail(String mail) { this.mail = mail; }
 
     public String getPassword() {
         return password;
     }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public void setPassword(String password) { this.password = password; }
 
     public int getLevel() {
         return level;
     }
+    public void setLevel(int level) { this.level = level; }
 
-    public void setLevel(int level) {
-        this.level = level;
+    public int getTotalExercises() {
+        return totalExercises;
+    }
+    public void setTotalExercises(int totalExercises) {
+        this.totalExercises = totalExercises;
+    }
+
+    public int getTotalMistakes() {
+        return totalMistakes;
+    }
+    public void setTotalMistakes(int totalMistakes) {
+        this.totalMistakes = totalMistakes;
+    }
+
+    public String getRole() {
+        return role;
+    }
+    public void setRole(String role) {
+        this.role = role;
     }
 }

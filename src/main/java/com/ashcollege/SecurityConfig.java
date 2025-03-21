@@ -5,6 +5,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
+/**
+ * הגדרת אבטחה בסיסית
+ */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -12,15 +15,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors();
-
-        // 1) כיבוי CSRF
         http.csrf().disable();
 
-        // 2) הגדרת הרשאות בגישה הקלאסית:
         http.authorizeRequests()
-                .antMatchers("/api/register", "/api/login").permitAll() // פתוח לכולם
-                .anyRequest().authenticated() // השאר מחייב התחברות
+                // פתוח:
+                .antMatchers("/api/register", "/api/login").permitAll()
+                // נתיבים למנהלים בלבד:
+                .antMatchers("/api/admin/**").hasRole("ADMIN")
+                // כל שאר הנתיבים דורשים התחברות (כלשהי)
+                .anyRequest().authenticated()
                 .and()
-                .formLogin().disable(); // אין טופס לוגין ברירת מחדל
+                .formLogin().disable();
     }
 }
