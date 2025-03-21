@@ -101,6 +101,13 @@ public class GeneralController {
         response.put("lastName", user.getLastName());
         response.put("mail", user.getMail());
         response.put("level", user.getLevel());
+
+        // --------------- שינוי מסעיף #4 ---------------
+        // נוסיף החזרה של סה"כ תרגילים ושגיאות
+        response.put("totalExercises", user.getTotalExercises());
+        response.put("totalMistakes", user.getTotalMistakes());
+        // ------------------------------------------------
+
         return ResponseEntity.ok(response);
     }
 

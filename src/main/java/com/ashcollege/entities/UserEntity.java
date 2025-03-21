@@ -14,6 +14,10 @@ public class UserEntity {
     private String lastName;
     private String mail;
     private String password;
+    private int totalExercises = 0;
+    private int totalMistakes = 0;
+
+
 
     // רמת המשתמש בכללי
     private int level;
@@ -56,6 +60,20 @@ public class UserEntity {
         return level;
     }
     public void setLevel(int level) { this.level = level; }
+
+    public int getTotalExercises() {
+        return totalExercises;
+    }
+    public void setTotalExercises(int totalExercises) {
+        this.totalExercises = totalExercises;
+    }
+
+    public int getTotalMistakes() {
+        return totalMistakes;
+    }
+    public void setTotalMistakes(int totalMistakes) {
+        this.totalMistakes = totalMistakes;
+    }
 
     public String getRole() {
         return role;

@@ -72,10 +72,19 @@ public class ExerciseController {
         int userAnswer = (int) answerData.get("answer");
         boolean isCorrect = exerciseService.checkAnswer(currentQuestion, userAnswer);
 
-        // שליפת topicId מתוך השאלה (שמנו אותו ב- generateQuestion)
+        // --------------- שינוי מסעיף #4 ---------------
+        // בכל תשובה (נכונה או לא), נעלה את מונה התרגילים ב-1
+        userService.incrementTotalExercises(user.getId());
+        // אם התשובה לא נכונה, נעלה את מונה השגיאות ב-1
+        if (!isCorrect) {
+            userService.incrementTotalMistakes(user.getId());
+        }
+        // ------------------------------------------------
+
+        // שליפת topicId מתוך השאלה
         int topicId = (int) currentQuestion.get("topicId");
 
-        // ננהל רצף נכון לכל נושא בנפרד, נשמור בסשן מפת (topicId -> consecutiveCount)
+        // ננהל רצף נכון לכל נושא בנפרד
         Map<Integer, Integer> consecutiveMap = (Map<Integer, Integer>) session.getAttribute("consecutiveMap");
         if (consecutiveMap == null) {
             consecutiveMap = new HashMap<>();
@@ -91,7 +100,6 @@ public class ExerciseController {
         session.setAttribute("consecutiveMap", consecutiveMap);
 
         // אם הגיע ל-5 רצופות => העלאת רמה לנושא הספציפי
-        // (שים לב שכאן אנחנו מעדכנים userTopicLevel ולא את user.level)
         String levelUpMessage = null; // הודעה שתשלח למשתמש
         if (consecutive >= 5) {
             exerciseService.increaseUserTopicLevel(user.getId(), topicId);
@@ -100,9 +108,8 @@ public class ExerciseController {
             session.setAttribute("consecutiveMap", consecutiveMap);
             consecutive = 0;
 
-            int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId); // שליפת הרמה החדשה
-            levelUpMessage = "כל הכבוד! עלית לרמה "+ newLevel +" בנושא זה!";
-
+            int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
+            levelUpMessage = "כל הכבוד! עלית לרמה " + newLevel + " בנושא זה!";
         }
 
         // בונים תשובה ללקוח
@@ -110,12 +117,9 @@ public class ExerciseController {
         result.put("isCorrect", isCorrect);
         result.put("correctAnswer", currentQuestion.get("correctAnswer"));
         result.put("consecutiveCorrect", consecutive);
-        // שליפה עדכנית של הרמה לאחר עדכון
         int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
         result.put("currentLevel", newLevel);
 
-
-        // אם יש הודעה על העלאת רמה, נוסיף אותה
         if (levelUpMessage != null) {
             result.put("levelUpMessage", levelUpMessage);
         }

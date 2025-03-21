@@ -51,4 +51,20 @@ public class UserService {
         }
         return null;  // במקרה של משתמש לא מחובר
     }
+
+    public void incrementTotalExercises(int userId) {
+        UserEntity user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            user.setTotalExercises(user.getTotalExercises() + 1);
+            userRepository.save(user);
+        }
+    }
+
+    public void incrementTotalMistakes(int userId) {
+        UserEntity user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            user.setTotalMistakes(user.getTotalMistakes() + 1);
+            userRepository.save(user);
+        }
+    }
 }
