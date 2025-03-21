@@ -25,9 +25,6 @@ public class GeneralController {
         return "Hello From Server";
     }
 
-    /**
-     * 📌 רישום משתמש חדש
-     */
     @PostMapping("/api/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserEntity user) {
         Map<String, Object> response = new HashMap<>();
@@ -43,13 +40,9 @@ public class GeneralController {
         }
     }
 
-    /**
-     * 📌 התחברות משתמש
-     */
     @PostMapping("/api/login")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData,
                                                          HttpServletRequest request) {
-        Map<String, Object> response = new HashMap<>();
         String mail = loginData.get("mail");
         String password = loginData.get("password");
 
@@ -58,7 +51,6 @@ public class GeneralController {
             if (foundUser == null) {
                 return errorResponse("המשתמש לא נמצא", HttpStatus.UNAUTHORIZED);
             }
-
             if (!userService.checkPassword(password, foundUser.getPassword())) {
                 return errorResponse("הסיסמה שגויה", HttpStatus.UNAUTHORIZED);
             }
@@ -79,16 +71,13 @@ public class GeneralController {
         }
     }
 
-    /**
-     * 📌 שליפת נתוני משתמש מחובר
-     */
+    // מחזיר נתוני משתמש (כולל סה"כ תרגילים ושגיאות)
     @GetMapping("/api/user")
     public ResponseEntity<Map<String, Object>> getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
         }
-
         String userMail = (String) auth.getPrincipal();
         UserEntity user = userService.findByMail(userMail);
         if (user == null) {
@@ -101,19 +90,12 @@ public class GeneralController {
         response.put("lastName", user.getLastName());
         response.put("mail", user.getMail());
         response.put("level", user.getLevel());
-
-        // --------------- שינוי מסעיף #4 ---------------
-        // נוסיף החזרה של סה"כ תרגילים ושגיאות
         response.put("totalExercises", user.getTotalExercises());
         response.put("totalMistakes", user.getTotalMistakes());
-        // ------------------------------------------------
 
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 📌 עדכון רמת המשתמש
-     */
     @PutMapping("/api/user/update-level")
     public ResponseEntity<Map<String, Object>> updateUserLevel(@RequestBody Map<String, Integer> request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -142,9 +124,6 @@ public class GeneralController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * 🔹 פונקציית עזר ליצירת תשובה עם שגיאה
-     */
     private ResponseEntity<Map<String, Object>> errorResponse(String message, HttpStatus status) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", false);
@@ -152,9 +131,6 @@ public class GeneralController {
         return ResponseEntity.status(status).body(response);
     }
 
-    /**
-     * 🔹 פונקציית עזר ליצירת תשובה עם הצלחה
-     */
     private ResponseEntity<Map<String, Object>> successResponse(String message) {
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

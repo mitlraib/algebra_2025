@@ -24,12 +24,9 @@ public class ExerciseController {
     @Autowired
     private ExerciseService exerciseService;
 
-    /**
-     * מביא שאלה חדשה ע"פ הנושא המבוקש ורמת המשתמש
-     */
+    // מביא שאלה חדשה לפי topicId
     @GetMapping("/next")
     public ResponseEntity<?> getNextQuestion(@RequestParam int topicId, HttpSession session) {
-        // בדיקה שהמשתמש מחובר
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(401).body("Not authenticated");
@@ -39,18 +36,13 @@ public class ExerciseController {
             return ResponseEntity.status(404).body("User not found");
         }
 
-        // צור שאלה חדשה דרך service
         Map<String, Object> question = exerciseService.generateQuestion(topicId);
-
-        // שומרים את נתוני השאלה בסשן כדי שנוכל לבדוק תשובה
         session.setAttribute("currentQuestion", question);
 
         return ResponseEntity.ok(question);
     }
 
-    /**
-     * מקבל תשובת משתמש, בודק נכונות, מעדכן רצף, ועשוי להעלות רמה
-     */
+    // בודק תשובה, מעלה רמה אם צריך, וסופר תרגילים/שגיאות
     @PostMapping("/answer")
     public ResponseEntity<?> checkAnswer(@RequestBody Map<String, Object> answerData, HttpSession session) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -62,29 +54,21 @@ public class ExerciseController {
             return ResponseEntity.status(404).body("User not found");
         }
 
-        // השאלה האחרונה
         Map<String, Object> currentQuestion = (Map<String, Object>) session.getAttribute("currentQuestion");
         if (currentQuestion == null) {
             return ResponseEntity.badRequest().body("No question in session");
         }
 
-        // האם התשובה נכונה?
         int userAnswer = (int) answerData.get("answer");
         boolean isCorrect = exerciseService.checkAnswer(currentQuestion, userAnswer);
 
-        // --------------- שינוי מסעיף #4 ---------------
-        // בכל תשובה (נכונה או לא), נעלה את מונה התרגילים ב-1
+        // ספירה של תרגילים + שגיאות
         userService.incrementTotalExercises(user.getId());
-        // אם התשובה לא נכונה, נעלה את מונה השגיאות ב-1
         if (!isCorrect) {
             userService.incrementTotalMistakes(user.getId());
         }
-        // ------------------------------------------------
 
-        // שליפת topicId מתוך השאלה
         int topicId = (int) currentQuestion.get("topicId");
-
-        // ננהל רצף נכון לכל נושא בנפרד
         Map<Integer, Integer> consecutiveMap = (Map<Integer, Integer>) session.getAttribute("consecutiveMap");
         if (consecutiveMap == null) {
             consecutiveMap = new HashMap<>();
@@ -99,11 +83,10 @@ public class ExerciseController {
         consecutiveMap.put(topicId, consecutive);
         session.setAttribute("consecutiveMap", consecutiveMap);
 
-        // אם הגיע ל-5 רצופות => העלאת רמה לנושא הספציפי
-        String levelUpMessage = null; // הודעה שתשלח למשתמש
+        // 5 תשובות רצופות => העלאת רמה בנושא
+        String levelUpMessage = null;
         if (consecutive >= 5) {
             exerciseService.increaseUserTopicLevel(user.getId(), topicId);
-            // מאפסים את הרצף
             consecutiveMap.put(topicId, 0);
             session.setAttribute("consecutiveMap", consecutiveMap);
             consecutive = 0;
@@ -112,14 +95,12 @@ public class ExerciseController {
             levelUpMessage = "כל הכבוד! עלית לרמה " + newLevel + " בנושא זה!";
         }
 
-        // בונים תשובה ללקוח
+        int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
         Map<String, Object> result = new HashMap<>();
         result.put("isCorrect", isCorrect);
         result.put("correctAnswer", currentQuestion.get("correctAnswer"));
         result.put("consecutiveCorrect", consecutive);
-        int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
         result.put("currentLevel", newLevel);
-
         if (levelUpMessage != null) {
             result.put("levelUpMessage", levelUpMessage);
         }
@@ -127,12 +108,9 @@ public class ExerciseController {
         return ResponseEntity.ok(result);
     }
 
-    /**
-     * בוחר נושא רנדומלי ומחזיר שאלה מתוך אותו נושא
-     */
+    // שאלה רנדומלית
     @GetMapping("/next-random")
     public ResponseEntity<?> getNextRandomQuestion(HttpSession session) {
-        // בדיקה שהמשתמש מחובר
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(401).body("Not authenticated");
@@ -144,7 +122,6 @@ public class ExerciseController {
 
         int[] possibleTopics = {1,2,3,4,5,6,7,8};
         int chosenTopic = possibleTopics[new Random().nextInt(possibleTopics.length)];
-
         Map<String, Object> question = exerciseService.generateQuestion(chosenTopic);
         session.setAttribute("currentQuestion", question);
 
