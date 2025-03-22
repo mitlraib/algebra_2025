@@ -16,12 +16,8 @@ public class UserEntity {
     private String password;
     private int totalExercises = 0;
     private int totalMistakes = 0;
-
-
-
     // רמת המשתמש בכללי
     private int level;
-
     // -- תוספת: role:
     private String role; // למשל "ADMIN" או "STUDENT"
 
