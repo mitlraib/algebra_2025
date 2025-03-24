@@ -13,4 +13,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     // מתודה שמבצע חיפוש של משתמש לפי המייל
     UserEntity findByMail(String email);
 
+        UserEntity findByUsername(String username);
+    }
 }

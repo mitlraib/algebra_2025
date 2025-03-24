@@ -22,6 +22,26 @@ public class UserTopicLevelController {
     @Autowired
     private UserTopicLevelRepository userTopicLevelRepo;
 
+    // פונקציה שליפת תפקיד המשתמש
+    @GetMapping("/role")
+    public ResponseEntity<?> getUserRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Not authenticated");
+        }
+
+        String username = auth.getName();  // שמו של המשתמש
+        UserEntity user = userService.findByUsername(username);  // נניח שיש לך פונקציה כזו ב־UserService
+
+        if (user == null) {
+            return ResponseEntity.status(404).body("User not found");
+        }
+
+        // מחזירים את התפקיד של המשתמש
+        return ResponseEntity.ok(Collections.singletonMap("role", user.getRole()));
+    }
+
     /**
      * מחזיר את כל הנושאים + הרמה של המשתמש בכל נושא
      */

@@ -67,4 +67,8 @@ public class UserService {
             userRepository.save(user);
         }
     }
+    // פונקציה לשליפת המשתמש לפי שם משתמש
+    public UserEntity findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 }
