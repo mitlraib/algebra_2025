@@ -16,10 +16,6 @@ public class UserEntity {
     private String password;
     private int totalExercises = 0;
     private int totalMistakes = 0;
-
-
-
-    // רמת המשתמש בכללי
     private int level;
 
     // -- תוספת: role:
@@ -39,27 +35,37 @@ public class UserEntity {
     public String getFirstName() {
         return firstName;
     }
-    public void setFirstName(String firstName) { this.firstName = firstName; }
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     public String getLastName() {
         return lastName;
     }
-    public void setLastName(String lastName) { this.lastName = lastName; }
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
     public String getMail() {
         return mail;
     }
-    public void setMail(String mail) { this.mail = mail; }
+    public void setMail(String mail) {
+        this.mail = mail;
+    }
 
     public String getPassword() {
         return password;
     }
-    public void setPassword(String password) { this.password = password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     public int getLevel() {
         return level;
     }
-    public void setLevel(int level) { this.level = level; }
+    public void setLevel(int level) {
+        this.level = level;
+    }
 
     public int getTotalExercises() {
         return totalExercises;
@@ -83,21 +89,12 @@ public class UserEntity {
     }
 
     @Override
-
     public String toString() {
-
         return "UserEntity{" +
-
                 "mail='" + mail + '\'' +
-
                 ", role=" + role +
-
                 ", level=" + level +
-
                 ", password='" + password + '\'' +
-
                 '}';
-
     }
-
 }

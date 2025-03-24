@@ -1,4 +1,3 @@
-// GeneralController.java - גירסה חדשה ללא שינויי role לפי אימייל
 package com.ashcollege.controllers;
 
 import com.ashcollege.entities.UserEntity;
@@ -56,18 +55,12 @@ public class GeneralController {
                 return errorResponse("הסיסמה שגויה", HttpStatus.UNAUTHORIZED);
             }
 
-            // ביטלנו את השורות שהגדירו foundUser.setRole(...) לפי אימייל.
-            // כעת התפקיד מגיע ישירות מה-DB.
-
-            // שליפת ה-Authorities לפי התפקיד ששמור במסד
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             if ("ADMIN".equalsIgnoreCase(foundUser.getRole())) {
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             } else {
                 authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
             }
-
-            authorities.add(new SimpleGrantedAuthority("ADMIN".equalsIgnoreCase(foundUser.getRole()) ? "ROLE_ADMIN" : "ROLE_STUDENT"));
 
             UsernamePasswordAuthenticationToken auth =
                     new UsernamePasswordAuthenticationToken(foundUser.getMail(), null, authorities);
@@ -94,6 +87,9 @@ public class GeneralController {
             return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
         }
 
+        System.out.println(user);  // הדפסת אובייקט המשתמש
+        System.out.println(user.getRole()); // הדפסת תפקיד
+
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("firstName", user.getFirstName());
@@ -103,7 +99,6 @@ public class GeneralController {
         response.put("role", user.getRole());
         response.put("totalExercises", user.getTotalExercises());
         response.put("totalMistakes", user.getTotalMistakes());
-        System.out.println(user.getRole());
         return ResponseEntity.ok(response);
     }
 
@@ -127,11 +122,9 @@ public class GeneralController {
 
         user.setLevel(newLevel);
         userService.updateUser(user);
+
         System.out.println("✅ עדכון רמה ל-" + newLevel);
-
-        System.out.println(user);  // אם UserEntity לא מממשת toString(), תוכל לקבל התראה
-
-
+        System.out.println(user); // הדפסת אובייקט המשתמש לאחר העדכון
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
