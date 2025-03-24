@@ -54,7 +54,7 @@ public class GeneralController {
             if (!userService.checkPassword(password, foundUser.getPassword())) {
                 return errorResponse("הסיסמה שגויה", HttpStatus.UNAUTHORIZED);
             }
-
+//
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("ADMIN".equalsIgnoreCase(foundUser.getRole()) ? "ROLE_ADMIN" : "ROLE_STUDENT"));
 
@@ -84,14 +84,19 @@ public class GeneralController {
             return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
         }
 
+        System.out.println(user);  // אם UserEntity לא מממשת toString(), תוכל לקבל התראה
+
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
         response.put("firstName", user.getFirstName());
         response.put("lastName", user.getLastName());
         response.put("mail", user.getMail());
         response.put("level", user.getLevel());
+        response.put("role", user.getRole());
         response.put("totalExercises", user.getTotalExercises());
         response.put("totalMistakes", user.getTotalMistakes());
+
+        System.out.println(user.getRole());
 
         return ResponseEntity.ok(response);
     }

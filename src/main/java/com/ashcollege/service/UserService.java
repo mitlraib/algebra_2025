@@ -22,7 +22,7 @@ public class UserService {
             throw new RuntimeException("המייל כבר קיים במערכת");
         }
         user.setLevel(1); // ברירת מחדל רמה 1
-        // שמירת המשתמש
+        user.setRole("STUDENT");
         userRepository.save(user);
     }
 

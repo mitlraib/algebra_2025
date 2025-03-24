@@ -16,6 +16,7 @@
         <property name="password" column="password" />
         <property name="mail" column="mail" />
         <property name="level" column="level" />
+        <property name="role" column="role" />
 
     </class>
 
