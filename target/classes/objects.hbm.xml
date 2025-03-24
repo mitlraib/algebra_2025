@@ -6,16 +6,17 @@
 <hibernate-mapping>
 
 
-<!--USER-->
+    <!--USER-->
     <class name="com.ashcollege.entities.UserEntity" table="my_users" lazy="false">
         <id name="id" type="int" column="id">
             <generator class="native"/>
         </id>
-<property name="firstName" column="firstName" />
+        <property name="firstName" column="firstName" />
         <property name="lastName" column="lastName" />
         <property name="password" column="password" />
         <property name="mail" column="mail" />
         <property name="level" column="level" />
+        <property name="role" column="role" />
 
     </class>
 
@@ -33,23 +34,23 @@
     </class>
 
 
-<!--    Solution-->
+    <!--    Solution-->
     <class name="com.ashcollege.entities.SolutionEntity" table="solutions" lazy="false">
-    <id name="id" type="int" column="id">
-        <generator class="native"/>
-    </id>
-    <property name="finalResult" column="finalResult" />
-    <property name="fullSolution" column="fullSolution" />
-</class>
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="finalResult" column="finalResult" />
+        <property name="fullSolution" column="fullSolution" />
+    </class>
 
 
-<!--    Subject-->
+    <!--    Subject-->
     <class name="com.ashcollege.entities.SubjectEntity" table="subjects" lazy="false">
-    <id name="id" type="int" column="id">
-        <generator class="native"/>
-    </id>
-    <property name="subjectName" column="subjectName" />
-    <property name="description" column="description" />
-</class>
+        <id name="id" type="int" column="id">
+            <generator class="native"/>
+        </id>
+        <property name="subjectName" column="subjectName" />
+        <property name="description" column="description" />
+    </class>
 
 </hibernate-mapping>

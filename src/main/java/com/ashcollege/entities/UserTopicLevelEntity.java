@@ -1,3 +1,4 @@
+// UserTopicLevelEntity.java
 package com.ashcollege.entities;
 
 import javax.persistence.*;
@@ -11,16 +12,18 @@ public class UserTopicLevelEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private int userId;   // או ManyToOne אם רוצים יחסים מלאים
+    private int userId;
     private int topicId;
     private int level;
+
+    // הוספה חדשה: מספר שגיאות מצטבר באותו נושא
+    private int mistakes = 0;
 
     public UserTopicLevelEntity() {}
 
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }
@@ -28,7 +31,6 @@ public class UserTopicLevelEntity {
     public int getUserId() {
         return userId;
     }
-
     public void setUserId(int userId) {
         this.userId = userId;
     }
@@ -36,7 +38,6 @@ public class UserTopicLevelEntity {
     public int getTopicId() {
         return topicId;
     }
-
     public void setTopicId(int topicId) {
         this.topicId = topicId;
     }
@@ -44,8 +45,14 @@ public class UserTopicLevelEntity {
     public int getLevel() {
         return level;
     }
-
     public void setLevel(int level) {
         this.level = level;
+    }
+
+    public int getMistakes() {
+        return mistakes;
+    }
+    public void setMistakes(int mistakes) {
+        this.mistakes = mistakes;
     }
 }

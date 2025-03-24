@@ -1,3 +1,4 @@
+// GeneralController.java - גירסה חדשה ללא שינויי role לפי אימייל
 package com.ashcollege.controllers;
 
 import com.ashcollege.entities.UserEntity;
@@ -55,12 +56,22 @@ public class GeneralController {
                 return errorResponse("הסיסמה שגויה", HttpStatus.UNAUTHORIZED);
             }
 
+            // ביטלנו את השורות שהגדירו foundUser.setRole(...) לפי אימייל.
+            // כעת התפקיד מגיע ישירות מה-DB.
+
+            // שליפת ה-Authorities לפי התפקיד ששמור במסד
             List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            if ("ADMIN".equalsIgnoreCase(foundUser.getRole())) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+            } else {
+                authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
+            }
+
             authorities.add(new SimpleGrantedAuthority("ADMIN".equalsIgnoreCase(foundUser.getRole()) ? "ROLE_ADMIN" : "ROLE_STUDENT"));
 
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    foundUser.getMail(), null, authorities
-            );
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(foundUser.getMail(), null, authorities);
+
             SecurityContextHolder.getContext().setAuthentication(auth);
             request.getSession(true).setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
 
@@ -71,7 +82,6 @@ public class GeneralController {
         }
     }
 
-    // מחזיר נתוני משתמש (כולל סה"כ תרגילים ושגיאות)
     @GetMapping("/api/user")
     public ResponseEntity<Map<String, Object>> getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -90,9 +100,10 @@ public class GeneralController {
         response.put("lastName", user.getLastName());
         response.put("mail", user.getMail());
         response.put("level", user.getLevel());
+        response.put("role", user.getRole());
         response.put("totalExercises", user.getTotalExercises());
         response.put("totalMistakes", user.getTotalMistakes());
-
+        System.out.println(user.getRole());
         return ResponseEntity.ok(response);
     }
 
@@ -117,6 +128,10 @@ public class GeneralController {
         user.setLevel(newLevel);
         userService.updateUser(user);
         System.out.println("✅ עדכון רמה ל-" + newLevel);
+
+        System.out.println(user);  // אם UserEntity לא מממשת toString(), תוכל לקבל התראה
+
+
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);

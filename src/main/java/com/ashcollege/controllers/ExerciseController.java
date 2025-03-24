@@ -1,3 +1,4 @@
+// ExerciseController.java
 package com.ashcollege.controllers;
 
 import com.ashcollege.entities.UserEntity;
@@ -62,13 +63,17 @@ public class ExerciseController {
         int userAnswer = (int) answerData.get("answer");
         boolean isCorrect = exerciseService.checkAnswer(currentQuestion, userAnswer);
 
-        // ספירה של תרגילים + שגיאות
+        // ספירה של תרגילים
         userService.incrementTotalExercises(user.getId());
+
+        // טעות => ספירת שגיאות כללית + לנושא
+        int topicId = (int) currentQuestion.get("topicId");
         if (!isCorrect) {
             userService.incrementTotalMistakes(user.getId());
+            exerciseService.incrementTopicMistakes(user.getId(), topicId);
         }
 
-        int topicId = (int) currentQuestion.get("topicId");
+        // בדיקת רצף תשובות נכונות לאותו topic
         Map<Integer, Integer> consecutiveMap = (Map<Integer, Integer>) session.getAttribute("consecutiveMap");
         if (consecutiveMap == null) {
             consecutiveMap = new HashMap<>();
