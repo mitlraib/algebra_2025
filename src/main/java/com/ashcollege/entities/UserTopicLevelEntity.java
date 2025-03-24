@@ -1,4 +1,3 @@
-// UserTopicLevelEntity.java
 package com.ashcollege.entities;
 
 import javax.persistence.*;
@@ -12,14 +11,13 @@ public class UserTopicLevelEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    private int userId;
-    private int topicId;
-    private int level;
+    private int userId;   // מזהה המשתמש
+    private int topicId;  // מזהה הנושא
+    private int level;    // רמת המשתמש בנושא
+    private int mistakes; // ספירת טעויות באותו נושא
 
-    // הוספה חדשה: מספר שגיאות מצטבר באותו נושא
-    private int mistakes = 0;
-
-    public UserTopicLevelEntity() {}
+    public UserTopicLevelEntity() {
+    }
 
     public int getId() {
         return id;

@@ -63,17 +63,16 @@ public class ExerciseController {
         int userAnswer = (int) answerData.get("answer");
         boolean isCorrect = exerciseService.checkAnswer(currentQuestion, userAnswer);
 
-        // ספירה של תרגילים
+        // ספירה של תרגילים + שגיאות כלליות
         userService.incrementTotalExercises(user.getId());
-
-        // טעות => ספירת שגיאות כללית + לנושא
         int topicId = (int) currentQuestion.get("topicId");
         if (!isCorrect) {
             userService.incrementTotalMistakes(user.getId());
+            // תוספת: העלאת מונה טעויות לנושא הספציפי:
             exerciseService.incrementTopicMistakes(user.getId(), topicId);
         }
 
-        // בדיקת רצף תשובות נכונות לאותו topic
+        // ניהול רצף נכון
         Map<Integer, Integer> consecutiveMap = (Map<Integer, Integer>) session.getAttribute("consecutiveMap");
         if (consecutiveMap == null) {
             consecutiveMap = new HashMap<>();
@@ -101,6 +100,8 @@ public class ExerciseController {
         }
 
         int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
+
+        // בניית תשובת JSON
         Map<String, Object> result = new HashMap<>();
         result.put("isCorrect", isCorrect);
         result.put("correctAnswer", currentQuestion.get("correctAnswer"));

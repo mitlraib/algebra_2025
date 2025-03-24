@@ -17,21 +17,18 @@ public class UserService {
     private UserRepository userRepository;
 
     public void registerUser(UserEntity user) {
-        // בדיקה אם שם המשתמש או המייל כבר קיימים
+        // בדיקה אם המייל כבר קיים
         if (userRepository.existsByMail(user.getMail())) {
             throw new RuntimeException("המייל כבר קיים במערכת");
         }
-        user.setLevel(1); // ברירת מחדל רמה 1
-        user.setRole("STUDENT");
+        user.setLevel(1); // רמה כללית 1
         userRepository.save(user);
     }
 
-    // מתודה שמחפשת את המשתמש לפי המייל
     public UserEntity findByMail(String mail) {
         return userRepository.findByMail(mail);
     }
 
-    // מתודה להשוואת הסיסמאות (בלי הצפנה)
     public boolean checkPassword(String rawPassword, String storedPassword) {
         return rawPassword.equals(storedPassword);
     }
@@ -40,22 +37,20 @@ public class UserService {
         userRepository.save(user);
     }
 
-    /**
-     * מחזיר את המשתמש הנוכחי (המאומת) מה-SecurityContext
-     */
     public UserEntity getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated()) {
             String email = (String) auth.getPrincipal();
             return userRepository.findByMail(email);
         }
-        return null;  // במקרה של משתמש לא מחובר
+        return null;
     }
 
     public void incrementTotalExercises(int userId) {
         UserEntity user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            user.setTotalExercises(user.getTotalExercises() + 1);
+            int oldVal = user.getTotalExercises();
+            user.setTotalExercises(oldVal + 1);
             userRepository.save(user);
         }
     }
@@ -63,12 +58,9 @@ public class UserService {
     public void incrementTotalMistakes(int userId) {
         UserEntity user = userRepository.findById(userId).orElse(null);
         if (user != null) {
-            user.setTotalMistakes(user.getTotalMistakes() + 1);
+            int oldVal = user.getTotalMistakes();
+            user.setTotalMistakes(oldVal + 1);
             userRepository.save(user);
         }
-    }
-    // פונקציה לשליפת המשתמש לפי שם משתמש
-    public UserEntity findByUsername(String username) {
-        return userRepository.findByUsername(username);
     }
 }

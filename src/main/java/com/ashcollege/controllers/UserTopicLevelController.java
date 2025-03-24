@@ -31,8 +31,8 @@ public class UserTopicLevelController {
             return ResponseEntity.status(401).body("Not authenticated");
         }
 
-        String username = auth.getName();  // שמו של המשתמש
-        UserEntity user = userService.findByUsername(username);  // נניח שיש לך פונקציה כזו ב־UserService
+        String email = auth.getName();
+        UserEntity user = userService.findByMail(email);
 
         if (user == null) {
             return ResponseEntity.status(404).body("User not found");
