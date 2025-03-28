@@ -23,6 +23,18 @@ public class ExerciseService {
     private UserTopicLevelRepository userTopicLevelRepo;
 
     private final Random rand = new Random();
+    private final String[] names = {"נועה", "דני", "רוני", "יואב", "מיקה", "תמר", "איתי", "איילה"};
+    private final String[] fruits = {"תפוחים", "אגסים", "תפוזים", "בננות", "שזיפים", "ענבים"};
+    private final String[] templatesAdd = {
+            "%s קיבל/ה %d %s, ואז קיבל/ה עוד %d. כמה יש לו/ה בסך הכול?",
+            "ל%s היו %d %s. לאחר מכן קיבל/ה עוד %d. כמה יש לו/ה עכשיו?",
+            "%s קיבל/ה %d %s ועוד %d נוספים. כמה יש לו/ה עכשיו?"
+    };
+    private final String[] templatesSubtract = {
+            "%s קיבל/ה %d %s ונתן/ה %d לחבר. כמה נשארו לו/ה?",
+            "ל%s היו %d %s. לאחר שנתן/ה %d מהם, כמה נשארו לו/ה?",
+            "%s אסף/ה %d %s ואיבד/ה %d בדרך. כמה נותרו לו/ה?"
+    };
 
     /**
      * מחולל שאלה בהתאם לנושא (topicId) + רמת המשתמש (רמה ללא הגבלה).
@@ -127,11 +139,17 @@ public class ExerciseService {
 
     // חיבור/חיסור/כפל/חילוק בהתאם לרמה
     private Map<String, Object> generateBasicArithmetic(String sign, int level) {
-        // אין הגבלה על רמה; ככל שעולה, כך maxVal = 5*level
         int maxVal = level * 5;
         if (maxVal < 5) {
             maxVal = 5;
         }
+
+        // 50% מהשאלות יהיו מילוליות (אם מתאימות)
+        if ((sign.equals("+") || sign.equals("-")) && rand.nextDouble() < 0.5) {
+            return generateWordProblem(sign, level);
+        }
+
+        // שאלות רגילות
         int a = 0, b = 0, correct = 0;
         boolean valid = false;
 
@@ -163,7 +181,6 @@ public class ExerciseService {
             }
         }
 
-        // חמישה פתרונות (נניח). אבל את יצרת רק 4, זה גם בסדר:
         int[] answers = new int[]{
                 correct,
                 correct + 1,
@@ -178,7 +195,48 @@ public class ExerciseService {
         q.put("operationSign", sign);
         q.put("correctAnswer", correct);
         q.put("answers", answers);
+        return q;
+    }
 
+    private Map<String, Object> generateWordProblem(String sign, int level) {
+        int maxVal = Math.max(5, level * 5);
+        String name = names[rand.nextInt(names.length)];
+        String fruit = fruits[rand.nextInt(fruits.length)];
+
+        int a = rand.nextInt(maxVal) + 1;
+        int b = rand.nextInt(maxVal) + 1;
+        int correct;
+
+        String template;
+
+        if (sign.equals("-")) {
+            // נוודא a >= b
+            while (a < b) {
+                a = rand.nextInt(maxVal) + 1;
+                b = rand.nextInt(maxVal) + 1;
+            }
+            correct = a - b;
+            template = templatesSubtract[rand.nextInt(templatesSubtract.length)];
+        } else {
+            correct = a + b;
+            template = templatesAdd[rand.nextInt(templatesAdd.length)];
+        }
+
+        String questionText = String.format(template, name, a, fruit, b);
+
+        int[] answers = new int[]{
+                correct,
+                correct + 1,
+                Math.max(0, correct - 1),
+                correct + 2
+        };
+        shuffleArray(answers);
+
+        Map<String, Object> q = new HashMap<>();
+        q.put("questionText", questionText);
+        q.put("operationSign", "word" ); // סימון שזה שאלה מילולית
+        q.put("correctAnswer", correct);
+        q.put("answers", answers);
         return q;
     }
 

@@ -40,6 +40,8 @@ public class ExerciseController {
         Map<String, Object> question = exerciseService.generateQuestion(topicId);
         session.setAttribute("currentQuestion", question);
 
+        System.out.println(question);
+
         return ResponseEntity.ok(question);
     }
 
