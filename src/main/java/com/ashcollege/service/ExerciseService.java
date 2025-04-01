@@ -163,7 +163,6 @@ public class ExerciseService {
             }
         }
 
-        // חמישה פתרונות (נניח). אבל את יצרת רק 4, זה גם בסדר:
         int[] answers = new int[]{
                 correct,
                 correct + 1,
@@ -171,10 +170,16 @@ public class ExerciseService {
                 correct + 2
         };
         shuffleArray(answers);
-
         Map<String, Object> q = new HashMap<>();
-        q.put("first", a);
-        q.put("second", b);
+
+        if (a >= b) {
+            q.put("first", a);
+            q.put("second", b);
+        } else {
+            q.put("first", b);
+            q.put("second", a);
+        }
+
         q.put("operationSign", sign);
         q.put("correctAnswer", correct);
         q.put("answers", answers);
