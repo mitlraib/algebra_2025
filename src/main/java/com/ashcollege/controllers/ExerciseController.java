@@ -32,18 +32,23 @@ public class ExerciseController {
         if (auth == null || !auth.isAuthenticated()) {
             return ResponseEntity.status(401).body("Not authenticated");
         }
+
         UserEntity user = userService.getCurrentUser();
         if (user == null) {
             return ResponseEntity.status(404).body("User not found");
         }
 
-        Map<String, Object> question = exerciseService.generateQuestion(topicId);
-        session.setAttribute("currentQuestion", question);
-
-        System.out.println(question);
-
-        return ResponseEntity.ok(question);
+        try {
+            Map<String, Object> question = exerciseService.generateQuestion(topicId);
+            session.setAttribute("currentQuestion", question);
+            System.out.println("Generated question: " + question);
+            return ResponseEntity.ok(question);
+        } catch (Exception e) {
+            e.printStackTrace(); // תדפיס את השגיאה המלאה לקונסול
+            return ResponseEntity.status(500).body("אירעה שגיאה ביצירת השאלה: " + e.getMessage());
+        }
     }
+
 
     // בודק תשובה, מעלה רמה אם צריך, וסופר תרגילים/שגיאות
     @PostMapping("/answer")

@@ -23,32 +23,37 @@ public class ExerciseService {
     private UserTopicLevelRepository userTopicLevelRepo;
 
     private final Random rand = new Random();
-    private final String[] names = {"נועה", "דני", "רוני", "יואב", "מיקה", "תמר", "איתי", "איילה"};
+    private final String[] boysNames = {"לביא", "דני", "ליאם", "יואב", "חיים", "דניאל", "איתי", "אדיר"};
+    private final String[] girlsNames = {"נועה", "דניאלה", "רוני", "חנה", "מיקה", "תמר", "אתי", "איילה"};
+    private final String[] objects = {"מחברות", "ספרים", "עפרונות", "עטים", "יומנים", "קלסרים"};
+    private final String[] buildings = {"בתים", "דירות", "מגדלים", "מגדלי לגו", "ארמונות מחול", "אוהלים"};
     private final String[] fruits = {"תפוחים", "אגסים", "תפוזים", "בננות", "שזיפים", "ענבים"};
     private final String[] templatesAdd = {
-            "%s קיבל/ה %d %s, ואז קיבל/ה עוד %d. כמה יש לו/ה בסך הכול?",
-            "ל%s היו %d %s. לאחר מכן קיבל/ה עוד %d. כמה יש לו/ה עכשיו?",
-            "%s קיבל/ה %d %s ועוד %d נוספים. כמה יש לו/ה עכשיו?",
-            "כמה זה %d ועוד %d?",
-            "%s מצא/ה %d %s, ואז מצא/ה עוד %d. כמה יש לו/ה עכשיו?",
-            "%s אסף/ה %d %s, ואחר כך הוסיפו לו/ה עוד %d. כמה יש לו/ה?",
-            "%s בנה/בנתה %d %s, ואז בנה/בנתה עוד %d. כמה בנה/בנתה בסך הכול?",
-            "%s קנה/קנתה %d %s, ואחר כך קנה/קנתה עוד %d. כמה קנה/קנתה?",
-            "בהתחלה היו ל%s %d %s, ואז הגיעו עוד %d. כמה יש לו/ה עכשיו?",
-            "אם %s התחיל/ה עם %d %s והצטרפו עוד %d, כמה יש לו/ה?"
+            "%s קיבל/ה %s, ואז קיבל/ה עוד %s. כמה יש לו/ה בסך הכול?",
+            "ל%s היו %s. לאחר מכן קיבל/ה עוד %s. כמה יש לו/ה עכשיו?",
+            "%s קיבל/ה %s ועוד %s נוספים. כמה יש לו/ה עכשיו?",
+            "כמה זה %s ועוד %s?",
+            "%s מצא/ה %s, ואז מצא/ה עוד %s. כמה יש לו/ה עכשיו?",
+            "%s אסף/ה %s, ואחר כך הוסיפו לו/ה עוד %s. כמה יש לו/ה?",
+            "%s בנה/בנתה %s, ואז בנה/בנתה עוד %s. כמה בנה/בנתה בסך הכול?",
+            "%s קנה/קנתה %s, ואחר כך קנה/קנתה עוד %s. כמה קנה/קנתה?",
+            "בהתחלה היו ל%s %s, ואז הגיעו עוד %s. כמה יש לו/ה עכשיו?",
+            "אם %s התחיל/ה עם %s והצטרפו עוד %s, כמה יש לו/ה?"
     };
+
     private final String[] templatesSubtract = {
-            "%s קיבל/ה %d %s ונתן/ה %d לחבר. כמה נשארו לו/ה?",
-            "ל%s היו %d %s. לאחר שנתן/ה %d מהם, כמה נשארו לו/ה?",
-            "%s אסף/ה %d %s ואיבד/ה %d בדרך. כמה נותרו לו/ה?",
-            "כמה זה %d פחות %d?",
-            "%s קיבל/ה %d %s, אבל איבד/ה %d. כמה נשארו לו/ה?",
-            "ל%s היו %d %s, והוא/היא חילק/ה %d מהם. כמה נשארו אצלו/ה?",
-            "%s התחיל/ה עם %d %s, ואחר כך לקחו לו/ה %d. כמה נותרו?",
-            "%s קנה/קנתה %d %s, ומכר/ה %d. כמה נשארו?",
-            "%s היה/הייתה עם %d %s, ואיבד/ה %d. כמה יש לו/ה עכשיו?",
-            "אם ל%s היו %d %s והוא/היא נתן/ה %d, כמה נשארו?"
+            "%s קיבל/ה %s ונתן/ה %s לחבר. כמה נשארו לו/ה?",
+            "ל%s היו %s. לאחר שנתן/ה %s מהם, כמה נשארו לו/ה?",
+            "%s אסף/ה %s ואיבד/ה %s בדרך. כמה נותרו לו/ה?",
+            "כמה זה %s פחות %s?",
+            "%s קיבל/ה %s, אבל איבד/ה %s. כמה נשארו לו/ה?",
+            "ל%s היו %s, והוא/היא חילק/ה %s מהם. כמה נשארו אצלו/ה?",
+            "%s התחיל/ה עם %s, ואחר כך לקחו לו/ה %s. כמה נותרו?",
+            "%s קנה/קנתה %s, ומכר/ה %s. כמה נשארו?",
+            "%s היה/הייתה עם %s, ואיבד/ה %s. כמה יש לו/ה עכשיו?",
+            "אם ל%s היו %s והוא/היא נתן/ה %s, כמה נשארו?"
     };
+
 
     /**
      * מחולל שאלה בהתאם לנושא (topicId) + רמת המשתמש (רמה ללא הגבלה).
@@ -66,7 +71,7 @@ public class ExerciseService {
             ute.setUserId(user.getId());
             ute.setTopicId(topicId);
             ute.setLevel(1); // התחל מרמה 1
-            ute.setMistakes(0); // הוספנו שדה mistakes בדוגמא
+            ute.setMistakes(0);
             userTopicLevelRepo.save(ute);
         }
         int currentLevel = ute.getLevel();
@@ -75,32 +80,15 @@ public class ExerciseService {
         // מחולל שאלה רגילה או שבר
         Map<String, Object> question;
         switch (topicId) {
-            case 1:
-                question = generateBasicArithmetic("+", currentLevel);
-                break;
-            case 2:
-                question = generateBasicArithmetic("-", currentLevel);
-                break;
-            case 3:
-                question = generateBasicArithmetic("×", currentLevel);
-                break;
-            case 4:
-                question = generateBasicArithmetic("÷", currentLevel);
-                break;
-            case 5:
-                question = generateFractionQuestion("+", currentLevel);
-                break;
-            case 6:
-                question = generateFractionQuestion("-", currentLevel);
-                break;
-            case 7:
-                question = generateFractionQuestion("×", currentLevel);
-                break;
-            case 8:
-                question = generateFractionQuestion("÷", currentLevel);
-                break;
-            default:
-                question = generateBasicArithmetic("+", currentLevel);
+            case 1: question = generateBasicArithmetic("+", currentLevel); break;
+            case 2: question = generateBasicArithmetic("-", currentLevel); break;
+            case 3: question = generateBasicArithmetic("×", currentLevel); break;
+            case 4: question = generateBasicArithmetic("÷", currentLevel); break;
+            case 5: question = generateFractionQuestion("+", currentLevel); break;
+            case 6: question = generateFractionQuestion("-", currentLevel); break;
+            case 7: question = generateFractionQuestion("×", currentLevel); break;
+            case 8: question = generateFractionQuestion("÷", currentLevel); break;
+            default: question = generateBasicArithmetic("+", currentLevel);
         }
 
         question.put("topicId", topicId);
@@ -158,7 +146,7 @@ public class ExerciseService {
             maxVal = 5;
         }
 
-        // 50% מהשאלות יהיו מילוליות (אם מתאימות)
+        // 50% מהשאלות יהיו מילוליות (אם מתאימות לחיבור/חיסור)
         if ((sign.equals("+") || sign.equals("-")) && rand.nextDouble() < 0.5) {
             return generateWordProblem(sign, level);
         }
@@ -214,20 +202,32 @@ public class ExerciseService {
 
     private Map<String, Object> generateWordProblem(String sign, int level) {
         int maxVal = Math.max(5, level * 5);
-        String name = names[rand.nextInt(names.length)];
-        String fruit = fruits[rand.nextInt(fruits.length)];
+
+        String name;
+        boolean isBoy;
+        if (rand.nextBoolean()) {
+            name = boysNames[rand.nextInt(boysNames.length)];
+            isBoy = true;
+        } else {
+            name = girlsNames[rand.nextInt(girlsNames.length)];
+            isBoy = false;
+        }
 
         int a = rand.nextInt(maxVal) + 1;
         int b = rand.nextInt(maxVal) + 1;
         int correct;
 
         String template;
-
         if (sign.equals("-")) {
-            // נוודא a >= b
-            while (a < b) {
+            int tries = 0;
+            while (a < b && tries < 1000) {
                 a = rand.nextInt(maxVal) + 1;
                 b = rand.nextInt(maxVal) + 1;
+                tries++;
+            }
+            if (tries >= 1000) {
+                a = Math.max(1, maxVal);
+                b = 1;
             }
             correct = a - b;
             template = templatesSubtract[rand.nextInt(templatesSubtract.length)];
@@ -236,22 +236,118 @@ public class ExerciseService {
             template = templatesAdd[rand.nextInt(templatesAdd.length)];
         }
 
-        String questionText = String.format(template, name, a, fruit, b);
+        // החלפת לשון זכר/נקבה
+        template = template
+                .replace("קיבל/ה", isBoy ? "קיבל" : "קיבלה")
+                .replace("נתן/ה", isBoy ? "נתן" : "נתנה")
+                .replace("אסף/ה", isBoy ? "אסף" : "אספה")
+                .replace("מצא/ה", isBoy ? "מצא" : "מצאה")
+                .replace("התחיל/ה", isBoy ? "התחיל" : "התחילה")
+                .replace("היו לו/ה", isBoy ? "היו לו" : "היו לה")
+                .replace("נשארו לו/ה", isBoy ? "נשארו לו" : "נשארו לה")
+                .replace("יש לו/ה", isBoy ? "יש לו" : "יש לה")
+                .replace("חילק/ה", isBoy ? "חילק" : "חילקה")
+                .replace("איבד/ה", isBoy ? "איבד" : "איבדה")
+                .replace("לקחו לו/ה", isBoy ? "לקחו לו" : "לקחו לה")
+                .replace("קנה/קנתה", isBoy ? "קנה" : "קנתה")
+                .replace("בנה/בנתה", isBoy ? "בנה" : "בנתה")
+                .replace("הוסיפו לו/ה", isBoy ? "הוסיפו לו" : "הוסיפו לה")
+                .replace("נשארו אצלו/ה", isBoy ? "נשארו אצלו" : "נשארו אצלה")
+                .replace("היה/הייתה", isBoy ? "היה" : "הייתה");
 
-        int[] answers = new int[]{
-                correct,
-                correct + 1,
-                Math.max(0, correct - 1),
-                correct + 2
-        };
+        boolean isBuildingTemplate = template.contains("בנה") || template.contains("בנתה");
+
+        String object;
+        if (isBuildingTemplate) {
+            object = buildings[rand.nextInt(buildings.length)];
+        } else {
+            String[] combined = new String[fruits.length + objects.length];
+            System.arraycopy(fruits, 0, combined, 0, fruits.length);
+            System.arraycopy(objects, 0, combined, fruits.length, objects.length);
+            object = combined[rand.nextInt(combined.length)];
+        }
+
+        String aText = getSingleFormWithObject(a, object, isBoy);
+        String bText = getSingleFormWithObject(b, object, isBoy);
+        String questionText = String.format(template, name, aText, bText);
+
+
+        // לחתוך אם מופיעה כבר המילה "כמה"
+        if (!template.startsWith("כמה")) {
+            int indexOfQuestion = questionText.indexOf("כמה");
+            if (indexOfQuestion != -1) {
+                questionText = questionText.substring(0, indexOfQuestion).trim();
+            }
+        }
+
+
+        // מוסיף את הסיומת: "כמה ... בסך הכול ..."
+        String ending;
+        if (questionText.contains("היו ל") || questionText.contains("בהתחלה היו") || questionText.contains("הצטרפו")) {
+            ending = String.format("כמה %s בסך הכל יש עכשיו ל%s?", object, name);
+        } else if (questionText.contains("אסף") || questionText.contains("אספה") ||
+                questionText.contains("מצא") || questionText.contains("מצאה") ||
+                questionText.contains("הוסיפו")) {
+            ending = String.format("כמה %s בסך הכל יש עכשיו ל%s?", object, name);
+        } else {
+            String verb = extractActionVerb(questionText, isBoy);
+            ending = String.format("כמה %s בסך הכל %s %s?", object, verb, name);
+        }
+        questionText += " " + ending;
+
+        // יוצר תשובות
+        int[] answers = {correct, correct + 1, Math.max(0, correct - 1), correct + 2};
         shuffleArray(answers);
 
+        // לבסוף בונה map
         Map<String, Object> q = new HashMap<>();
         q.put("questionText", questionText);
-        q.put("operationSign", "word" ); // סימון שזה שאלה מילולית
+        q.put("operationSign", "word");      // סימון שמדובר בשאלה מילולית
         q.put("correctAnswer", correct);
         q.put("answers", answers);
+
+        // שמירה של הנתונים לצורך הצגה בצד הלקוח
+        // כדי שתוכלי "להוסיף פתרון" לפי המתחת/מעל 20:
+        q.put("wordSign", sign);   // "+" או "-"
+        q.put("wordA", a);
+        q.put("wordB", b);
+
         return q;
+    }
+
+    private String extractActionVerb(String text, boolean isBoy) {
+        if (text.contains("קיבל") || text.contains("קיבלה")) return isBoy ? "קיבל" : "קיבלה";
+        if (text.contains("קנה") || text.contains("קנתה")) return isBoy ? "קנה" : "קנתה";
+        if (text.contains("בנה") || text.contains("בנתה")) return isBoy ? "בנה" : "בנתה";
+        if (text.contains("נתן") || text.contains("נתנה")) return isBoy ? "נתן" : "נתנה";
+        return isBoy ? "קיבל" : "קיבלה";
+    }
+
+    private String getSingleFormWithObject(int num, String object, boolean isBoy) {
+        if (num != 1) return num + " " + object;
+
+        String base = switch (object) {
+            case "תפוחים" -> "תפוח";
+            case "אגסים" -> "אגס";
+            case "תפוזים" -> "תפוז";
+            case "בננות" -> "בננה";
+            case "שזיפים" -> "שזיף";
+            case "ענבים" -> "ענב";
+            case "מחברות" -> "מחברת";
+            case "ספרים" -> "ספר";
+            case "עפרונות" -> "עיפרון";
+            case "עטים" -> "עט";
+            case "יומנים" -> "יומן";
+            case "קלסרים" -> "קלסר";
+            case "בתים" -> "בית";
+            case "דירות" -> "דירה";
+            case "מגדלים" -> "מגדל";
+            case "מגדלי לגו" -> "מגדל לגו";
+            case "ארמונות מחול" -> "ארמון מחול";
+            case "אוהלים" -> "אוהל";
+            default -> object;
+        };
+        return isBoy ? base + " אחד" : base + " אחת";
     }
 
     // שברים
@@ -312,7 +408,7 @@ public class ExerciseService {
         Map<String, Object> q = new HashMap<>();
         q.put("first", a + "/" + b);
         q.put("second", c + "/" + d);
-        q.put("operationSign", "frac" + sign); // סתם כדי לזהות שזה שבר
+        q.put("operationSign", "frac" + sign); // מזהה שזה שבר
         q.put("correctAnswer", correctEncoded);
         q.put("answers", answers);
 
@@ -357,6 +453,7 @@ public class ExerciseService {
         int[] f2 = createSingleFraction(maxDen, forcedNum);
 
         if (level <= 5) {
+            // מונע דומים
             while (f2[1] == f1[1]) {
                 f2 = createSingleFraction(maxDen, forcedNum);
             }
@@ -370,7 +467,7 @@ public class ExerciseService {
         if (forcedNum > 0) {
             num = forcedNum;
         } else if (forcedNum == 0) {
-            num = rand.nextInt(5) + 1;
+            num = rand.nextInt(5) + 1; // בין 1 ל-5
         } else {
             num = rand.nextInt(den) + 1;
         }
