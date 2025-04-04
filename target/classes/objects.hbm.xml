@@ -17,6 +17,8 @@
         <property name="mail" column="mail" />
         <property name="level" column="level" />
         <property name="role" column="role" />
+        <property name="totalExercises" column="totalExercises"  />
+        <property name="totalMistakes" column="totalMistakes"  />
 
     </class>
 
