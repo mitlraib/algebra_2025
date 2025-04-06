@@ -22,6 +22,8 @@ public class UserService {
             throw new RuntimeException("המייל כבר קיים במערכת");
         }
         user.setLevel(1); // רמה כללית 1
+        user.setRole("STUDENT"); // ברירת מחדל של תפקיד
+
         userRepository.save(user);
     }
 
