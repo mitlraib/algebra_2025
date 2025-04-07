@@ -8,9 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import java.util.*; // ✅ תוספת ל-Set, HashSet, Map וכו'
 
 @Service
 public class ExerciseService {
@@ -24,98 +22,63 @@ public class ExerciseService {
 
     private final Random rand = new Random();
 
-    /**
-     * מחולל שאלה בהתאם לנושא (topicId) + רמת המשתמש (רמה ללא הגבלה).
-     */
     public Map<String, Object> generateQuestion(int topicId) {
         UserEntity user = userService.getCurrentUser();
         if (user == null) {
             throw new RuntimeException("No current user found");
         }
 
-        // שליפת רמת המשתמש לנושא
         UserTopicLevelEntity ute = userTopicLevelRepo.findByUserIdAndTopicId(user.getId(), topicId);
         if (ute == null) {
             ute = new UserTopicLevelEntity();
             ute.setUserId(user.getId());
             ute.setTopicId(topicId);
-            ute.setLevel(1); // התחל מרמה 1
-            ute.setMistakes(0); // הוספנו שדה mistakes בדוגמא
+            ute.setLevel(1);
+            ute.setMistakes(0);
             ute.setAttempts(0);
             userTopicLevelRepo.save(ute);
         }
         int currentLevel = ute.getLevel();
         logger.info("Topic {} => CurrentLevel={}", topicId, currentLevel);
 
-        // מחולל שאלה רגילה או שבר
         Map<String, Object> question;
         switch (topicId) {
-            case 1:
-                question = generateBasicArithmetic("+", currentLevel);
-                break;
-            case 2:
-                question = generateBasicArithmetic("-", currentLevel);
-                break;
-            case 3:
-                question = generateBasicArithmetic("×", currentLevel);
-                break;
-            case 4:
-                question = generateBasicArithmetic("÷", currentLevel);
-                break;
-            case 5:
-                question = generateFractionQuestion("+", currentLevel);
-                break;
-            case 6:
-                question = generateFractionQuestion("-", currentLevel);
-                break;
-            case 7:
-                question = generateFractionQuestion("×", currentLevel);
-                break;
-            case 8:
-                question = generateFractionQuestion("÷", currentLevel);
-                break;
-            default:
-                question = generateBasicArithmetic("+", currentLevel);
+            case 1: question = generateBasicArithmetic("+", currentLevel); break;
+            case 2: question = generateBasicArithmetic("-", currentLevel); break;
+            case 3: question = generateBasicArithmetic("×", currentLevel); break;
+            case 4: question = generateBasicArithmetic("÷", currentLevel); break;
+            case 5: question = generateFractionQuestion("+", currentLevel); break;
+            case 6: question = generateFractionQuestion("-", currentLevel); break;
+            case 7: question = generateFractionQuestion("×", currentLevel); break;
+            case 8: question = generateFractionQuestion("÷", currentLevel); break;
+            default: question = generateBasicArithmetic("+", currentLevel);
         }
 
         question.put("topicId", topicId);
         return question;
     }
 
-    /**
-     * העלאת רמה בנושא.
-     */
     public void increaseUserTopicLevel(int userId, int topicId) {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
         if (rec != null) {
             int oldLevel = rec.getLevel();
             rec.setLevel(oldLevel + 1);
             userTopicLevelRepo.save(rec);
-            logger.info("User {} in topic {} => level up from {} to {}",
-                    userId, topicId, oldLevel, rec.getLevel());
+            logger.info("User {} in topic {} => level up from {} to {}", userId, topicId, oldLevel, rec.getLevel());
         }
     }
 
-    /**
-     * מחזיר את הרמה הנוכחית של המשתמש בנושא.
-     */
     public int getUserTopicLevel(int userId, int topicId) {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
         if (rec == null) return 1;
         return rec.getLevel();
     }
 
-    /**
-     * בודק אם התשובה נכונה ע"פ `correctAnswer`.
-     */
     public boolean checkAnswer(Map<String, Object> question, int userAnswer) {
         int correct = (int) question.get("correctAnswer");
         return (userAnswer == correct);
     }
 
-    /**
-     * מגדיל את כמות ה-mistakes למשתמש בנושא מסוים.
-     */
     public void incrementTopicMistakes(int userId, int topicId) {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
         if (rec != null) {
@@ -132,15 +95,24 @@ public class ExerciseService {
         }
     }
 
-    // ---------- להלן מחוללי השאלות ----------
+    private int[] generateUniqueAnswers(int correctAnswer) {
+        Set<Integer> uniqueAnswers = new HashSet<>();
+        uniqueAnswers.add(correctAnswer);
 
-    // חיבור/חיסור/כפל/חילוק בהתאם לרמה
-    private Map<String, Object> generateBasicArithmetic(String sign, int level) {
-        // אין הגבלה על רמה; ככל שעולה, כך maxVal = 5*level
-        int maxVal = level * 5;
-        if (maxVal < 5) {
-            maxVal = 5;
+        while (uniqueAnswers.size() < 4) {
+            int offset = rand.nextInt(5) - 2;
+            int candidate = correctAnswer + offset;
+            if (candidate < 0) continue;
+            uniqueAnswers.add(candidate);
         }
+
+        int[] arr = uniqueAnswers.stream().mapToInt(Integer::intValue).toArray();
+        shuffleArray(arr);
+        return arr;
+    }
+
+    private Map<String, Object> generateBasicArithmetic(String sign, int level) {
+        int maxVal = Math.max(level * 5, 5);
         int a = 0, b = 0, correct = 0;
         boolean valid = false;
 
@@ -149,46 +121,18 @@ public class ExerciseService {
             b = rand.nextInt(maxVal) + 1;
 
             switch (sign) {
-                case "+":
-                    correct = a + b;
-                    valid = true;
-                    break;
-                case "-":
-                    if (a >= b) {
-                        correct = a - b;
-                        valid = true;
-                    }
-                    break;
-                case "×":
-                    correct = a * b;
-                    valid = true;
-                    break;
-                case "÷":
-                    if (b != 0 && (a % b == 0)) {
-                        correct = a / b;
-                        valid = true;
-                    }
-                    break;
+                case "+": correct = a + b; valid = true; break;
+                case "-": if (a >= b) { correct = a - b; valid = true; } break;
+                case "×": correct = a * b; valid = true; break;
+                case "÷": if (b != 0 && a % b == 0) { correct = a / b; valid = true; } break;
             }
         }
 
-        int[] answers = new int[]{
-                correct,
-                correct + 1,
-                Math.max(0, correct - 1),
-                correct + 2
-        };
-        shuffleArray(answers);
+        int[] answers = generateUniqueAnswers(correct);
         Map<String, Object> q = new HashMap<>();
 
-        if (a >= b) {
-            q.put("first", a);
-            q.put("second", b);
-        } else {
-            q.put("first", b);
-            q.put("second", a);
-        }
-
+        q.put("first", Math.max(a, b));
+        q.put("second", Math.min(a, b));
         q.put("operationSign", sign);
         q.put("correctAnswer", correct);
         q.put("answers", answers);
@@ -196,17 +140,15 @@ public class ExerciseService {
         return q;
     }
 
-    // שברים
     private Map<String, Object> generateFractionQuestion(String sign, int level) {
-        int[] frac = createFractionPair(level); // מחזיר [num1, den1, num2, den2]
-        int a = frac[0], b = frac[1];
-        int c = frac[2], d = frac[3];
+        int[] frac = createFractionPair(level);
+        int a = frac[0];
+        int b = frac[1];
+        int c = frac[2];
+        int d = frac[3];
 
-        // אם חיסור, לוודא a/b >= c/d:
-        if (sign.equals("-")) {
-            if ((long) a * d < (long) c * b) {
-                return generateFractionQuestion(sign, level);
-            }
+        if (sign.equals("-") && (a * d < c * b)) {
+            return generateFractionQuestion(sign, level);
         }
 
         int num = 0, den = 0;
@@ -229,32 +171,32 @@ public class ExerciseService {
                     den = b * d;
                 }
                 break;
-            case "×":
-                num = a * c;
-                den = b * d;
-                break;
-            case "÷":
-                num = a * d;
-                den = b * c;
-                break;
+            case "×": num = a * c; den = b * d; break;
+            case "÷": num = a * d; den = b * c; break;
         }
 
-        if (num < 0 || den <= 0) {
-            return generateFractionQuestion(sign, level);
-        }
+        if (num < 0 || den <= 0) return generateFractionQuestion(sign, level);
 
         int correctEncoded = num * 1000 + den;
-        int[] answers = new int[4];
-        answers[0] = correctEncoded;
-        answers[1] = (num + 1) * 1000 + den;
-        answers[2] = Math.max(1, num - 1) * 1000 + den;
-        answers[3] = num * 1000 + Math.max(1, den + 1);
+        Set<Integer> uniqueAnswers = new HashSet<>();
+        uniqueAnswers.add(correctEncoded);
+
+        while (uniqueAnswers.size() < 4) {
+            int offsetNum = rand.nextInt(5) - 2;
+            int offsetDen = rand.nextInt(3);
+            int newNum = Math.max(1, num + offsetNum);
+            int newDen = Math.max(1, den + offsetDen);
+            int encoded = newNum * 1000 + newDen;
+            uniqueAnswers.add(encoded);
+        }
+
+        int[] answers = uniqueAnswers.stream().mapToInt(Integer::intValue).toArray();
         shuffleArray(answers);
 
         Map<String, Object> q = new HashMap<>();
         q.put("first", a + "/" + b);
         q.put("second", c + "/" + d);
-        q.put("operationSign", "frac" + sign); //  כדי לזהות שזה שבר
+        q.put("operationSign", "frac" + sign);
         q.put("correctAnswer", correctEncoded);
         q.put("answers", answers);
 
@@ -262,7 +204,6 @@ public class ExerciseService {
     }
 
     private int[] createFractionPair(int level) {
-        // רמה => משפיע על מכנים וכו'
         if (level < 1) level = 1;
 
         boolean sameDen = false;
@@ -283,8 +224,7 @@ public class ExerciseService {
         } else {
             differDen = true;
             int offset = 5 * (level - 5);
-            if (offset < 5) offset = 5;
-            maxDen = offset;
+            maxDen = Math.max(offset, 5);
             forcedNum = 0;
         }
 
@@ -303,19 +243,14 @@ public class ExerciseService {
                 f2 = createSingleFraction(maxDen, forcedNum);
             }
         }
+
         return new int[]{f1[0], f1[1], f2[0], f2[1]};
     }
 
     private int[] createSingleFraction(int maxDen, int forcedNum) {
         int den = rand.nextInt(maxDen - 1) + 2;
-        int num;
-        if (forcedNum > 0) {
-            num = forcedNum;
-        } else if (forcedNum == 0) {
-            num = rand.nextInt(5) + 1;
-        } else {
-            num = rand.nextInt(den) + 1;
-        }
+        int num = (forcedNum > 0) ? forcedNum :
+                (forcedNum == 0 ? rand.nextInt(5) + 1 : rand.nextInt(den) + 1);
         return new int[]{num, den};
     }
 
