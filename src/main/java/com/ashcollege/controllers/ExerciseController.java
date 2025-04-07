@@ -78,6 +78,7 @@ public class ExerciseController {
             // תוספת: העלאת מונה טעויות לנושא הספציפי:
             exerciseService.incrementTopicMistakes(user.getId(), topicId);
         }
+        exerciseService.incrementAttempt(user.getId(), topicId);
 
         // ניהול רצף נכון
         Map<Integer, Integer> consecutiveMap = (Map<Integer, Integer>) session.getAttribute("consecutiveMap");

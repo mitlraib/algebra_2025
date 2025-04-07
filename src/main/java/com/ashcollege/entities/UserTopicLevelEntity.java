@@ -15,6 +15,8 @@ public class UserTopicLevelEntity {
     private int topicId;  // מזהה הנושא
     private int level;    // רמת המשתמש בנושא
     private int mistakes; // ספירת טעויות באותו נושא
+    private int attempts; // ספירת ניסיונות (חדש)
+
 
     public UserTopicLevelEntity() {
     }
@@ -52,5 +54,11 @@ public class UserTopicLevelEntity {
     }
     public void setMistakes(int mistakes) {
         this.mistakes = mistakes;
+    }
+    public int getAttempts() {
+        return attempts;
+    }
+    public void setAttempts(int attempts) {
+        this.attempts = attempts;
     }
 }

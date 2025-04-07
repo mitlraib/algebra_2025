@@ -41,6 +41,7 @@ public class ExerciseService {
             ute.setTopicId(topicId);
             ute.setLevel(1); // התחל מרמה 1
             ute.setMistakes(0); // הוספנו שדה mistakes בדוגמא
+            ute.setAttempts(0);
             userTopicLevelRepo.save(ute);
         }
         int currentLevel = ute.getLevel();
@@ -119,6 +120,14 @@ public class ExerciseService {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
         if (rec != null) {
             rec.setMistakes(rec.getMistakes() + 1);
+            userTopicLevelRepo.save(rec);
+        }
+    }
+
+    public void incrementAttempt(int userId, int topicId) {
+        UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
+        if (rec != null) {
+            rec.setAttempts(rec.getAttempts() + 1);
             userTopicLevelRepo.save(rec);
         }
     }
