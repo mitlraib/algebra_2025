@@ -75,6 +75,18 @@ public class GeneralController {
         }
     }
 
+    @PostMapping("/api/logout")
+    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
+        SecurityContextHolder.clearContext(); // מנקה את האובייקט המאחסן את ה-Authentication
+        request.getSession(false).invalidate(); // הורג את ה־Session כך שאינו תקף עוד
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("message", "התנתקת בהצלחה!");
+        return ResponseEntity.ok(resp);
+    }
+
+
     @GetMapping("/api/user")
     public ResponseEntity<Map<String, Object>> getUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
