@@ -196,7 +196,7 @@ public class ExerciseService {
         Map<String, Object> q = new HashMap<>();
         q.put("first", a + "/" + b);
         q.put("second", c + "/" + d);
-        q.put("operationSign", "frac" + sign);
+        q.put("operationSign", sign);
         q.put("correctAnswer", correctEncoded);
         q.put("answers", answers);
 
