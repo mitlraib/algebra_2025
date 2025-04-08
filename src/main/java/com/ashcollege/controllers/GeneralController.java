@@ -104,6 +104,7 @@ public class GeneralController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("success", true);
+        response.put("userId", user.getId());
         response.put("firstName", user.getFirstName());
         response.put("lastName", user.getLastName());
         response.put("mail", user.getMail());
