@@ -112,13 +112,16 @@ public class ExerciseService {
     }
 
     private Map<String, Object> generateBasicArithmetic(String sign, int level) {
-        int maxVal = Math.max(level * 5, 5);
+        int maxVal = level * 5;
+        int minVal = (level - 1) * 5;
+
         int a = 0, b = 0, correct = 0;
         boolean valid = false;
 
         while (!valid) {
-            a = rand.nextInt(maxVal) + 1;
-            b = rand.nextInt(maxVal) + 1;
+            a = rand.nextInt(maxVal - minVal + 1) + minVal;
+            b = rand.nextInt(maxVal - minVal + 1) + minVal;
+
 
             switch (sign) {
                 case "+": correct = a + b; valid = true; break;
