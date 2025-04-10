@@ -24,7 +24,6 @@ public class UserEntity {
     public UserEntity() {
     }
 
-    // --- Getters & Setters ---
     public int getId() {
         return id;
     }

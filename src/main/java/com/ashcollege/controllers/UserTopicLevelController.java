@@ -58,7 +58,6 @@ public class UserTopicLevelController {
         }
 
         List<UserTopicLevelEntity> list = userTopicLevelRepo.findByUserId(user.getId());
-        // אולי תרצה להחזיר גם שם הנושא (topicName). כאן לצורך הדגמה, נבצע "תרגום" ידני:
         // mapping בין topicId -> שם
         Map<Integer, String> topicNames = new HashMap<>();
         topicNames.put(1, "חיבור");

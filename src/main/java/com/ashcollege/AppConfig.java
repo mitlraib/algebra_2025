@@ -61,17 +61,6 @@ public class AppConfig {
         return sessionFactoryBean;
     }
 
-    // אם תרצי להשתמש ב-HibernateTransactionManager במקום JPA:
-    // @Bean
-    // public HibernateTransactionManager transactionManager() throws Exception {
-    //     HibernateTransactionManager transactionManager = new HibernateTransactionManager();
-    //     transactionManager.setSessionFactory(sessionFactory().getObject());
-    //     return transactionManager;
-    // }
-
-    // הורדנו כאן את ה-WebMvcConfigurer שהחזיר allowedOrigins("*")
-    // כדי שלא יסתור את CorsConfig.
-
     @Bean
     public JpaTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);

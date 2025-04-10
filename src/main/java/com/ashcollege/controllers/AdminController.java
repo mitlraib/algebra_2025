@@ -23,8 +23,6 @@ public class AdminController {
      */
     @GetMapping("/most-mistakes-topic")
     public ResponseEntity<?> getMostMistakesTopic(Authentication auth) {
-        // נניח שיש הרשאת ADMIN: נוודא:
-        // (בקוד שלך, SecurityConfig דורש ROLE_ADMIN בנתיב /api/admin/** אז זה כבר מאובטח)
 
         List<UserTopicLevelEntity> all = userTopicLevelRepo.findAll();
         // נמפה topicId -> sum of mistakes
