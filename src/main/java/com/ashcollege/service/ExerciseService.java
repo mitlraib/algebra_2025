@@ -67,6 +67,25 @@ public class ExerciseService {
             logger.info("User {} in topic {} => level up from {} to {}", userId, topicId, oldLevel, rec.getLevel());
         }
     }
+    /**
+     * ממיר מונה ומכנה לטקסט תצוגה:
+     * - אם num%den==0 => מציג כמספר שלם
+     * - אחרת => מציג "num/den"
+     */
+
+    private String fractionDisplay(int numerator, int denominator) {
+        if (denominator == 0) {
+            // הגנה מפני חלוקה ב-0, אם בטעות נוצר
+            return "∞";
+        }
+        // אם המונה מתחלק בדיוק במכנה => להציג כמספר שלם
+        if (numerator % denominator == 0) {
+            return String.valueOf(numerator / denominator);
+        } else {
+            // להציג כמות שהוא, בלי צמצום מלא
+            return numerator + "/" + denominator;
+        }
+    }
 
     public int getUserTopicLevel(int userId, int topicId) {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
@@ -99,17 +118,33 @@ public class ExerciseService {
         Set<Integer> uniqueAnswers = new HashSet<>();
         uniqueAnswers.add(correctAnswer);
 
-        while (uniqueAnswers.size() < 4) {
-            int offset = rand.nextInt(5) - 2;
+        // מגבלה למניעת לולאה אין־סופית
+        int attempts = 0;
+
+        // כל עוד צריך עוד תשובות, וניסינו פחות מ-100 פעמים
+        while (uniqueAnswers.size() < 4 && attempts < 100) {
+            // offset בטווח -5 עד +5
+            int offset = rand.nextInt(11) - 5;
             int candidate = correctAnswer + offset;
-            if (candidate < 0) continue;
+            if (candidate < 1) continue;
+
             uniqueAnswers.add(candidate);
+            attempts++;
         }
 
-        int[] arr = uniqueAnswers.stream().mapToInt(Integer::intValue).toArray();
+        // אם במקרה לא הגענו ל-4 תשובות (מאוד נדיר), יש לנו fallback:
+        // אפשר לבדוק אם הגענו לפחות ל-4, ואם לא - להמשיך לייצר באופן אחר או להחזיר את מה שיש
+
+        int[] arr = uniqueAnswers.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
+
+        // ערבוב סדר התשובות
         shuffleArray(arr);
+
         return arr;
     }
+
 
     private Map<String, Object> generateBasicArithmetic(String sign, int level) {
         int maxVal = level * 5;
@@ -150,10 +185,12 @@ public class ExerciseService {
         int c = frac[2];
         int d = frac[3];
 
+        // בדיקה: לחיסור, נוודא שהמונה גדול מספיק כדי לא לקבל תוצאה שלילית:
         if (sign.equals("-") && (a * d < c * b)) {
             return generateFractionQuestion(sign, level);
         }
 
+        // חישוב תוצאת השבר הנכון
         int num = 0, den = 0;
         switch (sign) {
             case "+":
@@ -174,28 +211,62 @@ public class ExerciseService {
                     den = b * d;
                 }
                 break;
-            case "×": num = a * c; den = b * d; break;
-            case "÷": num = a * d; den = b * c; break;
+            case "×":
+            case "*": // לכל מקרה
+                num = a * c;
+                den = b * d;
+                break;
+            case "÷":
+            case "/":
+                num = a * d;
+                den = b * c;
+                break;
         }
 
-        if (num < 0 || den <= 0) return generateFractionQuestion(sign, level);
+        // אם נוצר שבר שלילי או מכנה אפס => קריאה חוזרת
+        if (num < 0 || den <= 0) {
+            return generateFractionQuestion(sign, level);
+        }
 
+        // כאן נשמור את הרשימה הסופית של התשובות (encoded),
+        // **אבל** נעקוב במקביל אחרי הטקסט שמוצג למשתמש (כדי למנוע כפילויות חזותיות)
+        List<Integer> answersList = new ArrayList<>();
+        Set<String> displayStrings = new HashSet<>();
+
+        // התשובה הנכונה ב-encoded
         int correctEncoded = num * 1000 + den;
-        Set<Integer> uniqueAnswers = new HashSet<>();
-        uniqueAnswers.add(correctEncoded);
+        // התצוגה למשתמש: אם זה מתחלק בשלמות => רק מספר שלם, אחרת "num/den"
+        String correctDisplay = fractionDisplay(num, den);
 
-        while (uniqueAnswers.size() < 4) {
+        // מוסיפים את התשובה הנכונה
+        answersList.add(correctEncoded);
+        displayStrings.add(correctDisplay);
+
+        // הגרלת עוד תשובות
+        int attempts = 0;
+        while (answersList.size() < 4 && attempts < 100) {
+            // אפשר להגדיל טווח אם רוצים יותר שונות
             int offsetNum = rand.nextInt(5) - 2;
             int offsetDen = rand.nextInt(3);
             int newNum = Math.max(1, num + offsetNum);
             int newDen = Math.max(1, den + offsetDen);
-            int encoded = newNum * 1000 + newDen;
-            uniqueAnswers.add(encoded);
+
+            String candidateDisplay = fractionDisplay(newNum, newDen);
+
+            // רק אם זה תצוגה חדשה ולא קיימת כבר, נוסיף
+            if (!displayStrings.contains(candidateDisplay)) {
+                answersList.add(newNum * 1000 + newDen);
+                displayStrings.add(candidateDisplay);
+            }
+
+            attempts++;
         }
 
-        int[] answers = uniqueAnswers.stream().mapToInt(Integer::intValue).toArray();
+        // המרת הרשימה למערך, ערבוב סדר (shuffle)
+        int[] answers = answersList.stream().mapToInt(Integer::intValue).toArray();
         shuffleArray(answers);
 
+        // בניית אובייקט ה-JSON להחזרה
         Map<String, Object> q = new HashMap<>();
         q.put("first", a + "/" + b);
         q.put("second", c + "/" + d);
@@ -205,6 +276,7 @@ public class ExerciseService {
 
         return q;
     }
+
 
     private int[] createFractionPair(int level) {
         if (level < 1) level = 1;
