@@ -248,7 +248,7 @@ public class ExerciseService {
             // אפשר להגדיל טווח אם רוצים יותר שונות
             int offsetNum = rand.nextInt(5) - 2;
             int offsetDen = rand.nextInt(3);
-            int newNum = Math.max(1, num + offsetNum);
+            int newNum = Math.max(0, num + offsetNum);  // 0 חוקי לגמרי כתוצאה
             int newDen = Math.max(1, den + offsetDen);
 
             String candidateDisplay = fractionDisplay(newNum, newDen);
@@ -260,6 +260,12 @@ public class ExerciseService {
             }
 
             attempts++;
+        }
+
+        if (correctEncoded ==0){
+            answersList.add(0);
+            displayStrings.add("0");
+
         }
 
         // המרת הרשימה למערך, ערבוב סדר (shuffle)
