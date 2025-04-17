@@ -93,6 +93,7 @@ public class GeneralController {
         if (auth == null || !auth.isAuthenticated()) {
             return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
         }
+
         String userMail = (String) auth.getPrincipal();
         UserEntity user = userService.findByMail(userMail);
         if (user == null) {
@@ -112,6 +113,8 @@ public class GeneralController {
         response.put("role", user.getRole());
         response.put("totalExercises", user.getTotalExercises());
         response.put("totalMistakes", user.getTotalMistakes());
+        response.put("detailedSolutions", user.isDetailedSolutions());
+
         return ResponseEntity.ok(response);
     }
 
@@ -158,4 +161,20 @@ public class GeneralController {
         response.put("message", message);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/api/user/preferences")
+    public ResponseEntity<Map<String,Object>> updatePreferences(@RequestBody Map<String,Object> body){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if(auth==null || !auth.isAuthenticated()) return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
+
+        UserEntity user = userService.findByMail((String) auth.getPrincipal());
+        if(user==null)  return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
+
+        Boolean detailed = (Boolean) body.get("detailedSolutions");
+        if(detailed!=null) user.setDetailedSolutions(detailed);
+        userService.updateUser(user);
+
+        return successResponse("עודכן בהצלחה");
+    }
+
 }

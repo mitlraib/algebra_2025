@@ -19,6 +19,10 @@
         <property name="role" column="role" />
         <property name="totalExercises" column="totalExercises"  />
         <property name="totalMistakes" column="totalMistakes"  />
+        <property name="detailedSolutions" type="java.lang.Boolean">
+            <column name="detailed_solutions" default="true" not-null="false"/>
+        </property>
+
 
     </class>
 

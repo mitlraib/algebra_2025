@@ -20,6 +20,14 @@ public class UserEntity {
 
     // -- תוספת: role:
     private String role; // למשל "ADMIN" או "STUDENT"
+    // רק התוספת הרלוונטית
+    @Column(name = "detailed_solutions")
+    private boolean detailedSolutions = true;
+
+    public boolean isDetailedSolutions()     { return detailedSolutions; }
+    public void   setDetailedSolutions(boolean detailedSolutions) {
+        this.detailedSolutions = detailedSolutions;
+    }
 
     public UserEntity() {
     }
