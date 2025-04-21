@@ -6,6 +6,10 @@ public class AchievementStatsEntity {
     private int subtraction;
     private int multiplication;
     private int division;
+    private int fractionAddition;
+    private int fractionSubtraction;
+    private int fractionMultiplication;
+    private int fractionDivision;
 
     public int getAddition() {
         return addition;
@@ -37,5 +41,37 @@ public class AchievementStatsEntity {
 
     public void setDivision(int division) {
         this.division = division;
+    }
+
+    public int getFractionAddition() {
+        return fractionAddition;
+    }
+
+    public void setFractionAddition(int fractionAddition) {
+        this.fractionAddition = fractionAddition;
+    }
+
+    public int getFractionSubtraction() {
+        return fractionSubtraction;
+    }
+
+    public void setFractionSubtraction(int fractionSubtraction) {
+        this.fractionSubtraction = fractionSubtraction;
+    }
+
+    public int getFractionMultiplication() {
+        return fractionMultiplication;
+    }
+
+    public void setFractionMultiplication(int fractionMultiplication) {
+        this.fractionMultiplication = fractionMultiplication;
+    }
+
+    public int getFractionDivision() {
+        return fractionDivision;
+    }
+
+    public void setFractionDivision(int fractionDivision) {
+        this.fractionDivision = fractionDivision;
     }
 }

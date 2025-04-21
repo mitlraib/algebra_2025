@@ -18,6 +18,7 @@ public class AchievementController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<AchievementStatsEntity> getAchievements(@PathVariable int userId) {
+
         AchievementStatsEntity stats = achievementService.getStatsForUser(userId);
         return ResponseEntity.ok(stats);
     }

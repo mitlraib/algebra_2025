@@ -28,6 +28,10 @@ public class AchievementService {
         stats.setSubtraction(0);
         stats.setMultiplication(0);
         stats.setDivision(0);
+        stats.setFractionAddition(0);
+        stats.setFractionSubtraction(0);
+        stats.setFractionMultiplication(0);
+        stats.setFractionDivision(0);
 
         for (UserTopicLevelEntity level : allLevels) {
             int topic = level.getTopicId();
@@ -45,6 +49,18 @@ public class AchievementService {
                     break;
                 case 4:
                     stats.setDivision(stats.getDivision() + correctAnswers);
+                    break;
+                case 5:
+                    stats.setFractionAddition(stats.getFractionAddition() + correctAnswers);
+                    break;
+                case 6:
+                    stats.setFractionSubtraction(stats.getFractionSubtraction() + correctAnswers);
+                    break;
+                case 7:
+                    stats.setFractionMultiplication(stats.getFractionMultiplication() + correctAnswers);
+                    break;
+                case 8:
+                    stats.setFractionDivision(stats.getFractionDivision() + correctAnswers);
                     break;
                 default:
                     System.out.println("Unknown topic: " + topic);
