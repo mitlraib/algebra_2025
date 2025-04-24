@@ -145,24 +145,59 @@ public class ExerciseService {
         return arr;
     }
 
-
     private Map<String, Object> generateBasicArithmetic(String sign, int level) {
-        int maxVal = level * 5;
-        int minVal = (level - 1) * 5;
-
         int a = 0, b = 0, correct = 0;
         boolean valid = false;
 
-        while (!valid) {
-            a = rand.nextInt(maxVal - minVal + 1) + minVal;
-            b = rand.nextInt(maxVal - minVal + 1) + minVal;
+        if (sign.equals("÷")) {
+            int maxA = level <= 5 ? level * 10 : 50 + (level - 5) * 50;
+            int maxResult = level <= 5 ? 4 + level : 10 + (level - 5) * 2;
+            int minA = Math.max(4, maxA / 5);
 
+            while (!valid) {
+                a = rand.nextInt(maxA - minA + 1) + minA;
 
-            switch (sign) {
-                case "+": correct = a + b; valid = true; break;
-                case "-": if (a >= b) { correct = a - b; valid = true; } break;
-                case "×": correct = a * b; valid = true; break;
-                case "÷": if (b != 0 && a % b == 0) { correct = a / b; valid = true; } break;
+                List<Integer> goodDivisors = new ArrayList<>();
+                for (int i = 2; i <= a / 2; i++) {
+                    if (a % i == 0) {
+                        int result = a / i;
+                        if (result > 1 && result <= maxResult) {
+                            goodDivisors.add(i);
+                        }
+                    }
+                }
+
+                if (!goodDivisors.isEmpty()) {
+                    b = goodDivisors.get(rand.nextInt(goodDivisors.size()));
+                    correct = a / b;
+                    valid = true;
+                }
+            }
+        }
+        else {
+            int minVal = (level - 1) * 5;
+            int maxVal = level * 5;
+
+            while (!valid) {
+                a = rand.nextInt(maxVal - minVal + 1) + minVal;
+                b = rand.nextInt(maxVal - minVal + 1) + minVal;
+
+                switch (sign) {
+                    case "+":
+                        correct = a + b;
+                        valid = true;
+                        break;
+                    case "-":
+                        if (a >= b) {
+                            correct = a - b;
+                            valid = true;
+                        }
+                        break;
+                    case "×":
+                        correct = a * b;
+                        valid = true;
+                        break;
+                }
             }
         }
 
@@ -177,6 +212,8 @@ public class ExerciseService {
 
         return q;
     }
+
+
 
     private Map<String, Object> generateFractionQuestion(String sign, int level) {
         int[] frac = createFractionPair(level);
