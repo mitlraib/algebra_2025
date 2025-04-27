@@ -188,11 +188,28 @@ public class ExerciseService {
                         valid = true;
                         break;
                     case "-":
-                        if (a >= b) {
-                            correct = a - b;
-                            valid = true;
+                        int minDifference;
+                        if (level <= 2) {
+                            minDifference = 3; // רמות קלות - פער קטן
+                        } else if (level <= 4) {
+                            minDifference = 6; // רמות בינוניות - פער בינוני
+                        } else if (level <= 6) {
+                            minDifference = 10;
+                        } else {
+                            minDifference = 20; // רמות גבוהות - פער גדול
                         }
+
+                        int maxValSub = level * 10;
+                        int minValSub = Math.max(2, level * 2);
+
+                        b = rand.nextInt(maxValSub / 2 - minValSub + 1) + minValSub;
+                        a = b + minDifference + rand.nextInt(maxValSub / 2);
+
+                        correct = a - b;
+                        valid = true;
                         break;
+
+
                     case "×":
                         correct = a * b;
                         valid = true;
