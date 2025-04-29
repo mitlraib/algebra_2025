@@ -20,7 +20,7 @@ import static com.ashcollege.utils.Constants.SCHEMA;
  * Change property spring.profiles.active to "test" for run application in this mode.
  */
 
-@Configuration
+//@Configuration
 @Profile("test")
 public class TestConfig {
     @Bean

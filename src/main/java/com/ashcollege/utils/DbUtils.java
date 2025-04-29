@@ -1,15 +1,11 @@
 package com.ashcollege.utils;
 
-
-
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.ashcollege.utils.Constants.SCHEMA;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 
 @Component
 public class DbUtils {
@@ -17,23 +13,21 @@ public class DbUtils {
     private Connection connection;
 
     @PostConstruct
-    public void init () {
-        createDbConnection(Constants.DB_USERNAME, Constants.DB_PASSWORD);
+    public void init() {
+        createDbConnection("postgres", "Mj40340550!");
     }
 
-    private void createDbConnection(String username, String password){
+    private void createDbConnection(String username, String password) {
         try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/"+SCHEMA, username, password);
-            System.out.println("Connection successful!");
-            System.out.println();
-        }catch (Exception e){
-            System.out.println("Cannot create DB connection!");
+            Class.forName("org.postgresql.Driver");
+            String jdbcUrl = "jdbc:postgresql://db.ntjpvjlippedoxlnjmmo.supabase.co:5432/postgres";
+            connection = DriverManager.getConnection(jdbcUrl, username, password);
+            System.out.println("✅ PostgreSQL connection successful!");
+        } catch (Exception e) {
+            System.out.println("❌ Cannot connect to PostgreSQL DB!");
+            e.printStackTrace();
         }
     }
 
-
-
-
-
+    // את יכולה להוסיף כאן פונקציות להרצת שאילתות או בדיקות אם צריך
 }
