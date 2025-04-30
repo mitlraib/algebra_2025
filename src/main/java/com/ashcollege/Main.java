@@ -12,10 +12,12 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(exclude = HibernateJpaAutoConfiguration.class)
+@SpringBootApplication
 @EnableScheduling
 
 public class Main {
+
+
     public static boolean applicationStarted = false;
     private static final Logger LOGGER = LoggerFactory.getLogger(Persist.class);
 
@@ -23,6 +25,9 @@ public class Main {
 
 
     public static void main(String[] args) {
+        System.out.println("ENV DATABASE_URL = " + System.getenv("DATABASE_URL"));
+        System.out.println("ENV DB_USER      = " + System.getenv("DB_USER"));
+        System.out.println("ENV DB_PASS      = " + System.getenv("DB_PASS"));
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
         LOGGER.info("Application started.");
         applicationStarted = true;

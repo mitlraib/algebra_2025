@@ -5,12 +5,10 @@ com\ashcollege\entities\SubjectEntity.class
 com\ashcollege\service\ExerciseService.class
 com\ashcollege\service\StatisticsService.class
 com\ashcollege\TestConfig.class
-com\ashcollege\utils\DbUtils.class
 com\ashcollege\utils\Constants.class
 com\ashcollege\repository\UserRepository.class
 com\ashcollege\entities\BaseEntity.class
 com\ashcollege\service\UserService.class
-com\ashcollege\AppConfig.class
 com\ashcollege\controllers\AchievementController.class
 com\ashcollege\entities\AchievementStatsEntity.class
 com\ashcollege\SecurityConfig.class

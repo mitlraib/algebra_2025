@@ -8,14 +8,12 @@ C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcol
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\entities\SubjectEntity.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\service\AchievementService.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\service\Persist.java
-C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\utils\DbUtils.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\controllers\StatisticsController.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\CorsConfig.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\utils\Errors.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\Main.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\service\ExerciseService.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\service\UserService.java
-C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\AppConfig.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\repository\UserTopicLevelRepository.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\entities\SolutionEntity.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\entities\AchievementStatsEntity.java
