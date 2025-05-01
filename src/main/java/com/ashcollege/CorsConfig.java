@@ -10,10 +10,12 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:8081")
+                .allowedOrigins(
+                        "https://math-journey-front.onrender.com", // הפרונט בענן
+                        "http://localhost:8081"                    // פיתוח מקומי
+                )
                 .allowedMethods("*")
-                .allowedHeaders("*")
-                .exposedHeaders("*")
                 .allowCredentials(true);
     }
+
 }
