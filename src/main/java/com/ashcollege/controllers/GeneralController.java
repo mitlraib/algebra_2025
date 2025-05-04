@@ -48,6 +48,7 @@ public class GeneralController {
         Map<String, Object> resp = new HashMap<>();
         try {
             userService.registerUser(user);
+
             resp.put("success", true);
             resp.put("message", "המשתמש נרשם בהצלחה");
             return ResponseEntity.ok(resp);
