@@ -18,13 +18,11 @@ public class AdminController {
     @Autowired
     private UserTopicLevelRepository userTopicLevelRepo;
 
-    /**
-     * מחזיר את topicId שבו סה"כ השגיאות (mistakes) הוא הגבוה ביותר
-     */
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/most-mistakes-topic")
     public ResponseEntity<?> getMostMistakesTopic(Authentication auth) {
 
-        List<UserTopicLevelEntity> all = userTopicLevelRepo.findAll();
+    List<UserTopicLevelEntity> all = userTopicLevelRepo.findAll();
         // נמפה topicId -> sum of mistakes
         Map<Integer,Integer> sumMap = new HashMap<>();
 

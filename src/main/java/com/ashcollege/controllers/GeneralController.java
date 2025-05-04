@@ -2,136 +2,141 @@ package com.ashcollege.controllers;
 
 import com.ashcollege.entities.UserEntity;
 import com.ashcollege.service.UserService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RestController
+@RequestMapping("/api")
 public class GeneralController {
 
-    @Autowired
-    private UserService userService;
+    @Value("${app.jwt.secret}")
+    private String secret;
 
-    @RequestMapping(value = "/", method = {RequestMethod.GET, RequestMethod.POST})
+    @Value("${app.jwt.expiration-days}")
+    private long expirationDays;
+
+    private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public GeneralController(UserService userService,
+                             PasswordEncoder passwordEncoder) {
+        this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    @GetMapping("/")
     public String hello() {
         return "Hello From Server";
     }
 
-    @PostMapping("/api/register")
+    @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserEntity user) {
-        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> resp = new HashMap<>();
         try {
             userService.registerUser(user);
-            response.put("success", true);
-            response.put("message", "המשתמש נרשם בהצלחה");
-            return ResponseEntity.ok(response);
+            resp.put("success", true);
+            resp.put("message", "המשתמש נרשם בהצלחה");
+            return ResponseEntity.ok(resp);
         } catch (Exception e) {
-            response.put("success", false);
-            response.put("message", "שגיאה במהלך הרישום: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            resp.put("success", false);
+            resp.put("message", "שגיאה במהלך הרישום: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(resp);
         }
     }
 
-    @PostMapping("/api/login")
-    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData,
-                                                         HttpServletRequest request) {
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData) {
         String mail = loginData.get("mail");
-        String password = loginData.get("password");
+        String rawPass = loginData.get("password");
 
-        try {
-            UserEntity foundUser = userService.findByMail(mail);
-            if (foundUser == null) {
-                return errorResponse("המשתמש לא נמצא", HttpStatus.UNAUTHORIZED);
-            }
-            if (!userService.checkPassword(password, foundUser.getPassword())) {
-                return errorResponse("הסיסמה שגויה", HttpStatus.UNAUTHORIZED);
-            }
-
-            List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-            if ("ADMIN".equalsIgnoreCase(foundUser.getRole())) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            } else {
-                authorities.add(new SimpleGrantedAuthority("ROLE_STUDENT"));
-            }
-
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(foundUser.getMail(), null, authorities);
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            request.getSession(true).setAttribute("SPRING_SECURITY_CONTEXT", SecurityContextHolder.getContext());
-
-            return successResponse("המשתמש התחבר בהצלחה");
-
-        } catch (Exception e) {
-            return errorResponse("שגיאה בכניסה: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        UserEntity foundUser = userService.findByMail(mail);
+        if (foundUser == null || !passwordEncoder.matches(rawPass, foundUser.getPassword())) {
+            return errorResponse("אימייל או סיסמה שגויים", HttpStatus.UNAUTHORIZED);
         }
-    }
 
-    @PostMapping("/api/logout")
-    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest request) {
-        SecurityContextHolder.clearContext(); // מנקה את האובייקט המאחסן את ה-Authentication
-        request.getSession(false).invalidate(); // הורג את ה־Session כך שאינו תקף עוד
+        // בונים SecretKey מתוך המחרוזת
+        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+        String token = Jwts.builder()
+                .setSubject(foundUser.getMail())
+                .claim("role", foundUser.getRole())
+                .setIssuedAt(new Date())
+                .setExpiration(Date.from(Instant.now().plus(expirationDays, ChronoUnit.DAYS)))
+                .signWith(key)
+                .compact();
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
-        resp.put("message", "התנתקת בהצלחה!");
+        resp.put("token", token);
         return ResponseEntity.ok(resp);
     }
 
-
-    @GetMapping("/api/user")
-    public ResponseEntity<Map<String, Object>> getUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
-        }
-
-        String userMail = (String) auth.getPrincipal();
-        UserEntity user = userService.findByMail(userMail);
-        if (user == null) {
-            return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
-        }
-
-        System.out.println(user);  // הדפסת אובייקט המשתמש
-        System.out.println(user.getRole()); // הדפסת תפקיד
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("userId", user.getId());
-        response.put("firstName", user.getFirstName());
-        response.put("lastName", user.getLastName());
-        response.put("mail", user.getMail());
-        response.put("level", user.getLevel());
-        response.put("role", user.getRole());
-        response.put("totalExercises", user.getTotalExercises());
-        response.put("totalMistakes", user.getTotalMistakes());
-        response.put("detailedSolutions", user.isDetailedSolutions());
-
-        return ResponseEntity.ok(response);
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest req) {
+        // Stateless — אין session לבטל באמת
+        return successResponse("התנתקת בהצלחה!");
     }
 
-    @PutMapping("/api/user/update-level")
-    public ResponseEntity<Map<String, Object>> updateUserLevel(@RequestBody Map<String, Integer> request) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    @GetMapping("/user")
+    public ResponseEntity<Map<String, Object>> getUser() {
+        var auth = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+
         if (auth == null || !auth.isAuthenticated()) {
             return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
         }
 
-        String userMail = (String) auth.getPrincipal();
-        UserEntity user = userService.findByMail(userMail);
+        String mail = (String) auth.getPrincipal();
+        UserEntity user = userService.findByMail(mail);
         if (user == null) {
             return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
         }
 
-        int newLevel = request.getOrDefault("level", 1);
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("userId", user.getId());
+        resp.put("firstName", user.getFirstName());
+        resp.put("lastName", user.getLastName());
+        resp.put("mail", user.getMail());
+        resp.put("level", user.getLevel());
+        resp.put("role", user.getRole());
+        resp.put("totalExercises", user.getTotalExercises());
+        resp.put("totalMistakes", user.getTotalMistakes());
+        resp.put("detailedSolutions", user.isDetailedSolutions());
+        return ResponseEntity.ok(resp);
+    }
+
+    @PutMapping("/user/update-level")
+    public ResponseEntity<Map<String, Object>> updateUserLevel(
+            @RequestBody Map<String, Integer> body) {
+
+        var auth = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
+        }
+
+        String mail = (String) auth.getPrincipal();
+        UserEntity user = userService.findByMail(mail);
+        if (user == null) {
+            return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
+        }
+
+        int newLevel = body.getOrDefault("level", 1);
         if (newLevel < 1 || newLevel > user.getLevel()) {
             return errorResponse("רמה לא תקינה: " + newLevel, HttpStatus.BAD_REQUEST);
         }
@@ -139,42 +144,47 @@ public class GeneralController {
         user.setLevel(newLevel);
         userService.updateUser(user);
 
-        System.out.println("✅ עדכון רמה ל-" + newLevel);
-        System.out.println(user); // הדפסת אובייקט המשתמש לאחר העדכון
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("newLevel", newLevel);
-        return ResponseEntity.ok(response);
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("newLevel", newLevel);
+        return ResponseEntity.ok(resp);
     }
 
-    private ResponseEntity<Map<String, Object>> errorResponse(String message, HttpStatus status) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", false);
-        response.put("message", message);
-        return ResponseEntity.status(status).body(response);
-    }
+    @PutMapping("/user/preferences")
+    public ResponseEntity<Map<String, Object>> updatePreferences(
+            @RequestBody Map<String, Object> body) {
 
-    private ResponseEntity<Map<String, Object>> successResponse(String message) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("message", message);
-        return ResponseEntity.ok(response);
-    }
-
-    @PutMapping("/api/user/preferences")
-    public ResponseEntity<Map<String,Object>> updatePreferences(@RequestBody Map<String,Object> body){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if(auth==null || !auth.isAuthenticated()) return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
+        var auth = org.springframework.security.core.context.SecurityContextHolder
+                .getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated()) {
+            return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
+        }
 
         UserEntity user = userService.findByMail((String) auth.getPrincipal());
-        if(user==null)  return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
+        if (user == null) {
+            return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
+        }
 
         Boolean detailed = (Boolean) body.get("detailedSolutions");
-        if(detailed!=null) user.setDetailedSolutions(detailed);
+        if (detailed != null) user.setDetailedSolutions(detailed);
         userService.updateUser(user);
 
         return successResponse("עודכן בהצלחה");
     }
 
+    // ---- עזרי תגובות ----
+
+    private ResponseEntity<Map<String, Object>> errorResponse(String msg, HttpStatus status) {
+        var resp = new HashMap<String, Object>();
+        resp.put("success", false);
+        resp.put("message", msg);
+        return ResponseEntity.status(status).body(resp);
+    }
+
+    private ResponseEntity<Map<String, Object>> successResponse(String msg) {
+        var resp = new HashMap<String, Object>();
+        resp.put("success", true);
+        resp.put("message", msg);
+        return ResponseEntity.ok(resp);
+    }
 }

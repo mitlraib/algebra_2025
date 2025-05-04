@@ -5,9 +5,8 @@ import com.ashcollege.entities.TopicStatisticsEntity;
 import com.ashcollege.service.StatisticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -15,17 +14,32 @@ import java.util.List;
 @RequestMapping("/api/statistics")
 public class StatisticsController {
 
-    @Autowired
-    private StatisticsService statisticsService;
+    private final StatisticsService statisticsService;
 
+    @Autowired
+    public StatisticsController(StatisticsService statisticsService) {
+        this.statisticsService = statisticsService;
+    }
+
+    /**
+     * מחזיר את הסטטיסטיקה העיקרית (סה"כ תרגילים, שגיאות וכו').
+     * רק משתמשים מאומתים (Authenticated) יכולים לגשת.
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping
     public ResponseEntity<StatisticsEntity> getStatistics() {
         StatisticsEntity statistics = statisticsService.getStatistics();
         return ResponseEntity.ok(statistics);
     }
 
+    /**
+     * מחזיר רשימה של סטטיסטיקות מפולחות לפי נושא.
+     * רק משתמשים מאומתים (Authenticated) יכולים לגשת.
+     */
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/by-topic")
     public ResponseEntity<List<TopicStatisticsEntity>> getStatisticsByTopic() {
-        return ResponseEntity.ok(statisticsService.getStatisticsByTopic());
+        List<TopicStatisticsEntity> list = statisticsService.getStatisticsByTopic();
+        return ResponseEntity.ok(list);
     }
 }
