@@ -1,4 +1,5 @@
 com\ashcollege\entities\UserEntity.class
+com\ashcollege\security\JwtAuthFilter.class
 com\ashcollege\service\AchievementService.class
 com\ashcollege\controllers\GeneralController.class
 com\ashcollege\entities\SubjectEntity.class

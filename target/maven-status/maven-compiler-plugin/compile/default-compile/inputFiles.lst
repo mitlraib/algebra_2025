@@ -1,6 +1,7 @@
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\entities\UserTopicLevelEntity.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\utils\Constants.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\SecurityConfig.java
+C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\security\JwtAuthFilter.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\responses\BasicResponse.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\controllers\UserTopicLevelController.java
 C:\Users\Admin\Desktop\mathJourney_backend\algebra_2025\src\main\java\com\ashcollege\entities\StatisticsEntity.java

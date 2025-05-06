@@ -61,33 +61,37 @@ public class GeneralController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> body) {
-        String mail    = body.get("mail");
-        String rawPass = body.get("password");
+        try {
+            String mail    = body.get("mail");
+            String rawPass = body.get("password");
 
-        UserEntity user = userService.findByMail(mail);
-        if (user == null || !passwordEncoder.matches(rawPass, user.getPassword())) {
-            return errorResponse("אימייל או סיסמה שגויים", HttpStatus.UNAUTHORIZED);
+            UserEntity user = userService.findByMail(mail);
+            if (user == null || !passwordEncoder.matches(rawPass, user.getPassword())) {
+                return errorResponse("אימייל או סיסמה שגויים", HttpStatus.UNAUTHORIZED);
+            }
+
+            SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+
+            String token = Jwts.builder()
+                    .setSubject(user.getMail())
+                    .claim("role", user.getRole())
+                    .setIssuedAt(new Date())
+                    .setExpiration(Date.from(Instant.now().plus(expirationDays, ChronoUnit.DAYS)))
+                    .signWith(key)
+                    .compact();
+
+            System.out.println("✅ Generated JWT = " + token);
+
+            Map<String, Object> resp = new HashMap<>();
+            resp.put("success", true);
+            resp.put("token",   token);
+            return ResponseEntity.ok(resp);
+
+        } catch (Exception e) {
+            System.out.println("❌ שגיאה ב־loginUser: " + e.getMessage());
+            e.printStackTrace(); // ← ידפיס את השגיאה המלאה ל־Render logs
+            return errorResponse("שגיאה בשרת", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        // ❶ SecretKey חייב להיות ≥ 32 byte
-        SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-
-        // ❷ בונים JWT
-        String token = Jwts.builder()
-                .setSubject(user.getMail())
-                .claim("role", user.getRole())
-                .setIssuedAt(new Date())
-                .setExpiration(Date.from(Instant.now().plus(expirationDays, ChronoUnit.DAYS)))
-                .signWith(key)
-                .compact();
-
-        // ❸ לוג כדי לראות שה‑token באמת קיים
-        System.out.println("Generated JWT = " + token);
-
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("success", true);
-        resp.put("token",   token);   // ← אל תשכחי
-        return ResponseEntity.ok(resp);
     }
 
     @PostMapping("/logout")
