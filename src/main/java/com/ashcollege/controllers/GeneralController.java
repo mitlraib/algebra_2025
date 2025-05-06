@@ -3,6 +3,7 @@ package com.ashcollege.controllers;
 import com.ashcollege.entities.UserEntity;
 import com.ashcollege.service.UserService;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -72,6 +73,9 @@ public class GeneralController {
 
             SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
+            String jwtSecret = System.getenv("JWT_SECRET"); // נטען מה־env
+            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
             String token = Jwts.builder()
                     .setSubject(user.getMail())
                     .claim("role", user.getRole())
