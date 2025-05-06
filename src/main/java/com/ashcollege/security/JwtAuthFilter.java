@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,16 +20,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Value("${app.jwt.secret}")
-    private String secretKey;  // מפתח שמגיע מ-application.properties / משתנה סביבה
+    private String secretKey;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -40,10 +38,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                // בונים SecretKey מתוך המחרוזת (UTF-8) של המפתח
-                SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+                byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+                SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-                // משתמשים ב-parserBuilder במקום parser()
                 Jws<Claims> jws = Jwts.parserBuilder()
                         .setSigningKey(key)
                         .build()
@@ -61,7 +58,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
 
             } catch (JwtException ex) {
-                // כל שגיאת JWT תגרום לניקוי ה-Context ולא תעבור ל-chain
                 SecurityContextHolder.clearContext();
             }
         }

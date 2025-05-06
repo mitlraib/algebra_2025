@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
 import javax.servlet.http.HttpServletRequest;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -39,17 +38,11 @@ public class GeneralController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping("/")
-    public String hello() {
-        return "Hello From Server";
-    }
-
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> registerUser(@RequestBody UserEntity user) {
         Map<String, Object> resp = new HashMap<>();
         try {
             userService.registerUser(user);
-
             resp.put("success", true);
             resp.put("message", "המשתמש נרשם בהצלחה");
             return ResponseEntity.ok(resp);
@@ -71,11 +64,10 @@ public class GeneralController {
                 return errorResponse("אימייל או סיסמה שגויים", HttpStatus.UNAUTHORIZED);
             }
 
-            SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+            // שימוש נכון עם BASE64:
+            byte[] keyBytes = Decoders.BASE64.decode(secret);
+            SecretKey key = Keys.hmacShaKeyFor(keyBytes);
 
-            String jwtSecret = System.getenv("JWT_SECRET"); // נטען מה־env
-            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-            SecretKey secretKey = Keys.hmacShaKeyFor(keyBytes);
             String token = Jwts.builder()
                     .setSubject(user.getMail())
                     .claim("role", user.getRole())
@@ -88,20 +80,14 @@ public class GeneralController {
 
             Map<String, Object> resp = new HashMap<>();
             resp.put("success", true);
-            resp.put("token",   token);
+            resp.put("token", token);
             return ResponseEntity.ok(resp);
 
         } catch (Exception e) {
             System.out.println("❌ שגיאה ב־loginUser: " + e.getMessage());
-            e.printStackTrace(); // ← ידפיס את השגיאה המלאה ל־Render logs
+            e.printStackTrace();
             return errorResponse("שגיאה בשרת", HttpStatus.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest req) {
-        // Stateless — אין session לבטל באמת
-        return successResponse("התנתקת בהצלחה!");
     }
 
     @GetMapping("/user")
@@ -131,6 +117,11 @@ public class GeneralController {
         resp.put("totalMistakes", user.getTotalMistakes());
         resp.put("detailedSolutions", user.isDetailedSolutions());
         return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, Object>> logout(HttpServletRequest req) {
+        return successResponse("התנתקת בהצלחה!");
     }
 
     @PutMapping("/user/update-level")
@@ -184,8 +175,6 @@ public class GeneralController {
 
         return successResponse("עודכן בהצלחה");
     }
-
-    // ---- עזרי תגובות ----
 
     private ResponseEntity<Map<String, Object>> errorResponse(String msg, HttpStatus status) {
         var resp = new HashMap<String, Object>();
