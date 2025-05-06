@@ -60,29 +60,33 @@ public class GeneralController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> loginData) {
-        String mail = loginData.get("mail");
-        String rawPass = loginData.get("password");
+    public ResponseEntity<Map<String, Object>> loginUser(@RequestBody Map<String, String> body) {
+        String mail    = body.get("mail");
+        String rawPass = body.get("password");
 
-        UserEntity foundUser = userService.findByMail(mail);
-        if (foundUser == null || !passwordEncoder.matches(rawPass, foundUser.getPassword())) {
+        UserEntity user = userService.findByMail(mail);
+        if (user == null || !passwordEncoder.matches(rawPass, user.getPassword())) {
             return errorResponse("אימייל או סיסמה שגויים", HttpStatus.UNAUTHORIZED);
         }
 
-        // בונים SecretKey מתוך המחרוזת
+        // ❶ SecretKey חייב להיות ≥ 32 byte
         SecretKey key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
 
+        // ❷ בונים JWT
         String token = Jwts.builder()
-                .setSubject(foundUser.getMail())
-                .claim("role", foundUser.getRole())
+                .setSubject(user.getMail())
+                .claim("role", user.getRole())
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plus(expirationDays, ChronoUnit.DAYS)))
                 .signWith(key)
                 .compact();
 
+        // ❸ לוג כדי לראות שה‑token באמת קיים
+        System.out.println("Generated JWT = " + token);
+
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
-        resp.put("token", token);
+        resp.put("token",   token);   // ← אל תשכחי
         return ResponseEntity.ok(resp);
     }
 
