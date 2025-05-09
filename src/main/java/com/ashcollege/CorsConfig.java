@@ -15,7 +15,7 @@ public class CorsConfig implements WebMvcConfigurer {
                         "http://localhost:19006",  // Expo‑Go
                         "https://math-journey-front.onrender.com"
                 ).allowedMethods("GET","POST","PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("Authorization", "Content-Type")
+                .allowedHeaders("Authorization", "Content-Type").exposedHeaders("Authorization")
                 .allowCredentials(false);      // לא עובדים עם קוקיז – אפשר false
 
     }
