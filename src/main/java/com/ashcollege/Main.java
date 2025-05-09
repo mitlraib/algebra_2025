@@ -21,9 +21,9 @@ public class Main {
 
 
     public static void main(String[] args) {
-        System.out.println("ENV DATABASE_URL = " + System.getenv("DATABASE_URL"));
-        System.out.println("ENV DB_USER      = " + System.getenv("DB_USER"));
-        System.out.println("ENV DB_PASS      = " + System.getenv("DB_PASS"));
+        System.out.println("ENV DATABASE_URL = " + System.getenv("SPRING_DATASOURCE_URL"));
+        System.out.println("ENV DB_USER      = " + System.getenv("SPRING_DATASOURCE_USERNAME"));
+        System.out.println("ENV DB_PASS      = " + System.getenv("SPRING_DATASOURCE_PASSWORD"));
         ConfigurableApplicationContext context = SpringApplication.run(Main.class, args);
         LOGGER.info("Application started.");
         applicationStarted = true;
