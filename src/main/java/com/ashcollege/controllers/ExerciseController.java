@@ -39,7 +39,9 @@ public class ExerciseController {
         }
 
         try {
+            System.out.println("🔁 התחלה generateQuestion: " + System.currentTimeMillis());
             Map<String, Object> question = exerciseService.generateQuestion(topicId);
+            System.out.println("✅ סיום generateQuestion: " + System.currentTimeMillis());
             return ResponseEntity.ok(question);
         } catch (Exception e) {
             return ResponseEntity.status(500)
@@ -68,14 +70,13 @@ public class ExerciseController {
         @SuppressWarnings("unchecked")
         Map<String, Object> question = (Map<String, Object>) payload.get("question");
         if (question == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Missing question"));
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "חסרה שאלה בבקשה"));
         }
 
         Integer userAnswer = (Integer) payload.get("answer");
         if (userAnswer == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Missing answer"));
         }
-
         boolean isCorrect = exerciseService.checkAnswer(question, userAnswer);
 
         // ספירת תרגילים ושגיאות
