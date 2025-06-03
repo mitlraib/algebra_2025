@@ -18,19 +18,17 @@ public class UserEntity {
     private int totalMistakes = 0;
     private int level;
 
-    // -- תוספת: role:
-    private String role; // למשל "ADMIN" או "STUDENT"
-    // רק התוספת הרלוונטית
+    @Column(name = "correct_streak") // ✅ החלק שהופך את זה לעובד!
+    private int correctStreak = 0;
+
     @Column(name = "detailed_solutions")
     private boolean detailedSolutions = true;
 
-    public boolean isDetailedSolutions()     { return detailedSolutions; }
-    public void   setDetailedSolutions(boolean detailedSolutions) {
-        this.detailedSolutions = detailedSolutions;
-    }
+    private String role; // למשל: STUDENT / ADMIN
 
-    public UserEntity() {
-    }
+    // === Getters & Setters ===
+
+    public UserEntity() {}
 
     public int getId() {
         return id;
@@ -67,13 +65,6 @@ public class UserEntity {
         this.password = password;
     }
 
-    public int getLevel() {
-        return level;
-    }
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
     public int getTotalExercises() {
         return totalExercises;
     }
@@ -88,6 +79,27 @@ public class UserEntity {
         this.totalMistakes = totalMistakes;
     }
 
+    public int getLevel() {
+        return level;
+    }
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int getCorrectStreak() {
+        return correctStreak;
+    }
+    public void setCorrectStreak(int correctStreak) {
+        this.correctStreak = correctStreak;
+    }
+
+    public boolean isDetailedSolutions() {
+        return detailedSolutions;
+    }
+    public void setDetailedSolutions(boolean detailedSolutions) {
+        this.detailedSolutions = detailedSolutions;
+    }
+
     public String getRole() {
         return role;
     }
@@ -99,9 +111,11 @@ public class UserEntity {
     public String toString() {
         return "UserEntity{" +
                 "mail='" + mail + '\'' +
-                ", role=" + role +
+                ", role='" + role + '\'' +
                 ", level=" + level +
-                ", password='" + password + '\'' +
+                ", totalExercises=" + totalExercises +
+                ", totalMistakes=" + totalMistakes +
+                ", correctStreak=" + correctStreak +
                 '}';
     }
 }

@@ -66,7 +66,6 @@ public class ExerciseController {
             return ResponseEntity.status(404).body(Map.of("error", "User not found"));
         }
 
-        // שליפת השאלה והמשתמש מה־payload
         @SuppressWarnings("unchecked")
         Map<String, Object> question = (Map<String, Object>) payload.get("question");
         if (question == null) {
@@ -77,29 +76,48 @@ public class ExerciseController {
         if (userAnswer == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Missing answer"));
         }
-        boolean isCorrect = exerciseService.checkAnswer(question, userAnswer);
 
-        // ספירת תרגילים ושגיאות
-        userService.incrementTotalExercises(user.getId());
+        boolean isCorrect = exerciseService.checkAnswer(question, userAnswer);
         int topicId = (int) question.get("topicId");
-        if (!isCorrect) {
-            userService.incrementTotalMistakes(user.getId());
-            exerciseService.incrementTopicMistakes(user.getId(), topicId);
-        }
+
+        // תמיד נעדכן נסיונות
+        userService.incrementTotalExercises(user.getId());
         exerciseService.incrementAttempt(user.getId(), topicId);
 
-        // ניהול רצף ותוספת רמה
-        // (ברגע זה עושים בלקוח, או אם עדיין רוצים כאן, צריך לקחת רצף מה־DB)
-        // ... לדוגמה פשוט מחזירים את הרמה הנוכחית:
+        String levelUpMessage = null;
+
+        if (isCorrect) {
+            user.setCorrectStreak(user.getCorrectStreak() + 1);
+
+            if (user.getCorrectStreak() >= 5) {
+                exerciseService.increaseUserTopicLevel(user.getId(), topicId);
+                user.setCorrectStreak(0); // מאפסים לאחר עלייה
+                levelUpMessage = "מעולה! עלית רמה!";
+            }
+
+        } else {
+            userService.incrementTotalMistakes(user.getId());
+            exerciseService.incrementTopicMistakes(user.getId(), topicId);
+            user.setCorrectStreak(0); // טעות => מאפסים רצף
+        }
+
+        // לשמור את המשתמש עם הרצף החדש (או המאופס)
+        userService.updateUser(user);
+
         int newLevel = exerciseService.getUserTopicLevel(user.getId(), topicId);
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("isCorrect", isCorrect);
         resp.put("correctAnswer", question.get("correctAnswer"));
         resp.put("currentLevel", newLevel);
-        // אם אתם רוצים מורכב יותר (routines, מסרים) תוסיפו כאן
+
+        if (levelUpMessage != null) {
+            resp.put("levelUpMessage", levelUpMessage);
+        }
+
         return ResponseEntity.ok(resp);
     }
+
 
     /**
      * פונקציה להפקת שאלה רנדומלית.
