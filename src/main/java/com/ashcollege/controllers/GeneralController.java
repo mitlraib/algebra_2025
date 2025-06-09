@@ -124,36 +124,6 @@ public class GeneralController {
         return successResponse("התנתקת בהצלחה!");
     }
 
-    @PutMapping("/user/update-level")
-    public ResponseEntity<Map<String, Object>> updateUserLevel(
-            @RequestBody Map<String, Integer> body) {
-
-        var auth = org.springframework.security.core.context.SecurityContextHolder
-                .getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated()) {
-            return errorResponse("משתמש לא מחובר", HttpStatus.UNAUTHORIZED);
-        }
-
-        String mail = (String) auth.getPrincipal();
-        UserEntity user = userService.findByMail(mail);
-        if (user == null) {
-            return errorResponse("המשתמש לא נמצא", HttpStatus.NOT_FOUND);
-        }
-
-        int newLevel = body.getOrDefault("level", 1);
-        if (newLevel < 1 || newLevel > user.getLevel()) {
-            return errorResponse("רמה לא תקינה: " + newLevel, HttpStatus.BAD_REQUEST);
-        }
-
-        user.setLevel(newLevel);
-        userService.updateUser(user);
-
-        Map<String, Object> resp = new HashMap<>();
-        resp.put("success", true);
-        resp.put("newLevel", newLevel);
-        return ResponseEntity.ok(resp);
-    }
-
     @PutMapping("/user/preferences")
     public ResponseEntity<Map<String, Object>> updatePreferences(
             @RequestBody Map<String, Object> body) {

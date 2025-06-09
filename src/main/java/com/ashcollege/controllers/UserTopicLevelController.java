@@ -3,6 +3,7 @@ package com.ashcollege.controllers;
 import com.ashcollege.entities.UserEntity;
 import com.ashcollege.entities.UserTopicLevelEntity;
 import com.ashcollege.repository.UserTopicLevelRepository;
+import com.ashcollege.service.ExerciseService;
 import com.ashcollege.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,8 @@ public class UserTopicLevelController {
 
     private final UserService userService;
     private final UserTopicLevelRepository userTopicLevelRepo;
+    @Autowired
+    private ExerciseService exerciseService;
 
     @Autowired
     public UserTopicLevelController(UserService userService,
@@ -124,6 +127,7 @@ public class UserTopicLevelController {
 
         rec.setLevel(newLevel);
         userTopicLevelRepo.save(rec);
+        exerciseService.updateGeneralLevel(user.getId());
 
         return ResponseEntity.ok(Map.of(
                 "success", true,

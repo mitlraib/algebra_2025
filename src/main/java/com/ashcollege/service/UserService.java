@@ -31,7 +31,7 @@ public class UserService {
         }
         // קידוד הסיסמה לפני שמירה
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setLevel(1);
+        user.setLevel(0);
         user.setRole("STUDENT");
         userRepository.save(user);
     }

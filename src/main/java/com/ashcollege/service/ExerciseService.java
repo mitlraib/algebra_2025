@@ -2,6 +2,7 @@ package com.ashcollege.service;
 
 import com.ashcollege.entities.UserEntity;
 import com.ashcollege.entities.UserTopicLevelEntity;
+import com.ashcollege.repository.UserRepository;
 import com.ashcollege.repository.UserTopicLevelRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +21,9 @@ public class ExerciseService {
     @Autowired
     private UserTopicLevelRepository userTopicLevelRepo;
 
+    @Autowired
+    private UserRepository userRepo;
+
     private final Random rand = new Random();
 
     public Map<String, Object> generateQuestion(int topicId) {
@@ -33,7 +37,7 @@ public class ExerciseService {
             ute = new UserTopicLevelEntity();
             ute.setUserId(user.getId());
             ute.setTopicId(topicId);
-            ute.setLevel(1);
+            ute.setLevel(0); // במקום 1
             ute.setMistakes(0);
             ute.setAttempts(0);
             userTopicLevelRepo.save(ute);
@@ -65,6 +69,10 @@ public class ExerciseService {
             rec.setLevel(oldLevel + 1);
             userTopicLevelRepo.save(rec);
             logger.info("User {} in topic {} => level up from {} to {}", userId, topicId, oldLevel, rec.getLevel());
+
+            System.out.println("📥 Updating topic level...");
+            // ✅ עדכון רמה כללית לפי ממוצע
+            updateGeneralLevel(userId);
         }
     }
     /**
@@ -91,6 +99,35 @@ public class ExerciseService {
         UserTopicLevelEntity rec = userTopicLevelRepo.findByUserIdAndTopicId(userId, topicId);
         if (rec == null) return 1;
         return rec.getLevel();
+    }
+
+    public void updateGeneralLevel(int userId) {
+        List<UserTopicLevelEntity> levels = userTopicLevelRepo.findByUserId(userId);
+        if (levels.isEmpty()) return;
+
+        // מסננים רק נושאים שהתחילו בהם
+        List<UserTopicLevelEntity> progressed = levels.stream()
+                .filter(l -> l.getLevel() > 0)
+                .toList();
+
+        if (progressed.isEmpty()) {
+            UserEntity user = userRepo.findById(userId).orElse(null);
+            if (user != null) {
+                user.setLevel(0);
+                userRepo.save(user);
+            }
+            return;
+        }
+
+        int minLevel = progressed.stream().mapToInt(UserTopicLevelEntity::getLevel).min().orElse(0);
+
+        UserEntity user = userRepo.findById(userId).orElse(null);
+        if (user != null) {
+            user.setLevel(minLevel);
+            userRepo.save(user);
+        }
+
+        System.out.println("🟣 GENERAL LEVEL CALCULATED (MIN): " + minLevel);
     }
 
     public boolean checkAnswer(Map<String, Object> question, int userAnswer) {
